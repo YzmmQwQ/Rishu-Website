@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rishuですわ.</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"
+    <meta name="description" content="自由，热爱。 ">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="dotted-bg"></div>
+
+    <div class="container">
+        <nav class="top-bar">
+            <div class="site-title"><a href="https://rishu.us.ci">RISHU.US.CI</a></div>
+            <div class="nav-right">
+                <a href="https://docs.rishu.us.ci" class="nav-link">DOCS</a>
+                <div class="lang-selector">
+                    <button class="lang-btn" onclick="toggleLangMenu()">
+                        <span id="currentLang">中文</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+                    <div class="lang-menu" id="langMenu">
+                        <div class="lang-menu-header" data-i18n="langHint">蛤？还有多语言呐？</div>
+                        <button onclick="setLang('zh')">中文</button>
+                        <button onclick="setLang('en')">English</button>
+                        <button onclick="setLang('ja')">日本語</button>
+                    </div>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg id="sunIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg id="moonIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <span id="themeText">DARK</span>
+                </button>
+            </div>
+        </nav>
+
+        <div class="section-label">ABOUT MYSELF</div>
+
+        <div class="header">
+            <div class="avatar-large"><img src="img/rishu.jpg" /></div>
+            <h1 class="title-main">IT'S RISHU.</h1>
+            <div class="subtitle-scroll-wrap">
+                <div class="subtitle-scroll">
+                    <span class="subtitle-item">16 YEARS OLD</span>
+                    <span class="subtitle-item">23/08/2009</span>
+                    <span class="subtitle-item">FROM JAPAN 🇯🇵</span>
+                    <span class="subtitle-item">GEMINI 2.5 PRO</span>
+                    <span class="subtitle-item">LOVE U FOREVER</span>
+                    <span class="subtitle-item">SIMPLE PERSON</span>
+                </div>
+            </div>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span>SLACKING OFF...</span>
+            </div>
+        </div>
+
+        <div class="bio" data-i18n="bio">
+            没有什么特别的吧？别问太多，懒。
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="label">Birthday</div>
+                <div class="value">2009.08.23</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Height</div>
+                <div class="value">183cm</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Origin</div>
+                <div class="value">🇯🇵 Japan</div>
+            </div>
+            <div class="info-item">
+                <div class="label">Grade</div>
+                <div class="value">Senior High</div>
+            </div>
+        </div>
+
+        <div class="tags-row">
+            <div class="tags-section">
+                <div class="tags-title">PLAYING</div>
+                <div class="tags">
+                    <span class="tag accent">Minecraft</span>
+                    <span class="tag">Genshin Impact</span>
+                    <span class="tag">Honkai: Star Rail</span>
+                    <span class="tag">Zenless Zone Zero</span>
+                    <span class="tag">Blue Archive</span>
+                    <span class="tag">Phigros</span>
+                    <span class="tag">ARKNIGHTS</span>
+                    <span class="tag">Project Sekai</span>
+                </div>
+            </div>
+
+            <div class="tags-section">
+                <div class="tags-title">LISTENING</div>
+                <div class="tags">
+                    <span class="tag accent">Jay Chou</span>
+                    <span class="tag accent">Hatsune Miku</span>
+                </div>
+                <div class="now-playing">
+                    <div class="now-playing-cover"><img src="img/jay.jpg" /></div>
+                    <div class="now-playing-info">
+                        <div class="label">Now Playing</div>
+                        <div class="song">楓 - 周杰倫</div>
+                        <div class="lyrics-scroll-wrap">
+                            <div class="lyrics-scroll">
+                                <span class="lyrics-item">緩緩飄落的楓葉像思念</span>
+                                <span class="lyrics-item">我點燃燭火溫暖 歲末的秋天</span>
+                                <span class="lyrics-item">極光掠奪天邊</span>
+                                <span class="lyrics-item">北風掠過想你的容顏</span>
+                                <span class="lyrics-item">我把愛燒成了落葉</span>
+                                <span class="lyrics-item">卻換不回熟悉的那張臉</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="quote" data-i18n="quote">
+            自由，热爱。
+        </div>
+
+        <div class="links-section">
+            <div class="section-label" data-i18n="linksTitle">这或许是你唯一找到我的方法？</div>
+            <div class="links-grid">
+                <a href="mailto:rishu@rishu.us.ci" class="link-card">
+                    <div class="link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="link-info">
+                        <div class="link-name" data-i18n="emailTitle">来封 Email？</div>
+                        <div class="link-desc">rishu@rishu.us.ci</div>
+                    </div>
+                </a>
+                <a href="https://qm.qq.com/q/LF2qz5Omcy" class="link-card">
+                    <div class="link-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="link-info">
+                        <div class="link-name" data-i18n="qqTitle">加我 QQ？</div>
+                        <div class="link-desc">3436984302</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            MADE BY <a href="https://yz-mm.top">YZMM</a>
+        </div>
+    </div>
+
+    <button class="back-to-top" onclick="scrollToTop()" aria-label="Back to top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+
+    <script src="script.js"></script>
+</body>
+</html>
