@@ -245,7 +245,8 @@ a {
 
 /* Subtitle scroll with inverted effect */
 .subtitle-scroll-wrap {
-    height: 48px;
+    --subtitle-height: 48px;
+    height: var(--subtitle-height);
     overflow: hidden;
     margin-bottom: 16px;
 }
@@ -262,21 +263,21 @@ a {
 @keyframes subtitleScroll {
     0% { transform: translateY(0); }
     14% { transform: translateY(0); }
-    16.67% { transform: translateY(-48px); }
-    30.67% { transform: translateY(-48px); }
-    33.33% { transform: translateY(-96px); }
-    47.33% { transform: translateY(-96px); }
-    50% { transform: translateY(-144px); }
-    64% { transform: translateY(-144px); }
-    66.67% { transform: translateY(-192px); }
-    80.67% { transform: translateY(-192px); }
-    83.33% { transform: translateY(-240px); }
-    97.33% { transform: translateY(-240px); }
+    16.67% { transform: translateY(calc(var(--subtitle-height) * -1)); }
+    30.67% { transform: translateY(calc(var(--subtitle-height) * -1)); }
+    33.33% { transform: translateY(calc(var(--subtitle-height) * -2)); }
+    47.33% { transform: translateY(calc(var(--subtitle-height) * -2)); }
+    50% { transform: translateY(calc(var(--subtitle-height) * -3)); }
+    64% { transform: translateY(calc(var(--subtitle-height) * -3)); }
+    66.67% { transform: translateY(calc(var(--subtitle-height) * -4)); }
+    80.67% { transform: translateY(calc(var(--subtitle-height) * -4)); }
+    83.33% { transform: translateY(calc(var(--subtitle-height) * -5)); }
+    97.33% { transform: translateY(calc(var(--subtitle-height) * -5)); }
     100% { transform: translateY(0); }
 }
 
 .subtitle-item {
-    height: 48px;
+    height: var(--subtitle-height);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -800,11 +801,12 @@ a {
     }
 
     .subtitle-scroll-wrap {
-        height: 36px;
+        --subtitle-height: 36px;
+        height: var(--subtitle-height);
     }
 
     .subtitle-item {
-        height: 36px;
+        height: var(--subtitle-height);
         font-size: 1.5rem;
     }
 

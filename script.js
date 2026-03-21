@@ -70,14 +70,14 @@ function toggleTheme() {
 
     if (html.classList.contains('dark')) {
         html.classList.remove('dark');
-        sunIcon.style.display = 'block';
-        moonIcon.style.display = 'none';
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';
         themeText.textContent = 'DARK';
         localStorage.setItem('theme', 'light');
     } else {
         html.classList.add('dark');
-        sunIcon.style.display = 'none';
-        moonIcon.style.display = 'block';
+        sunIcon.style.display = 'block';
+        moonIcon.style.display = 'none';
         themeText.textContent = 'LIGHT';
         localStorage.setItem('theme', 'dark');
     }
@@ -91,8 +91,8 @@ function toggleTheme() {
 
     if (isDark) {
         document.documentElement.classList.add('dark');
-        document.getElementById('sunIcon').style.display = 'none';
-        document.getElementById('moonIcon').style.display = 'block';
+        document.getElementById('sunIcon').style.display = 'block';
+        document.getElementById('moonIcon').style.display = 'none';
         document.getElementById('themeText').textContent = 'LIGHT';
     }
 })();
