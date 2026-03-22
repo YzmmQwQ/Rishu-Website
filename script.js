@@ -110,3 +110,20 @@ window.addEventListener('scroll', () => {
         btn.classList.remove('show');
     }
 });
+
+// Update subtitle height on resize
+function updateSubtitleHeight() {
+    const wrap = document.querySelector('.subtitle-scroll-wrap');
+    const scroll = document.querySelector('.subtitle-scroll');
+    if (wrap && scroll) {
+        const height = window.innerWidth <= 600 ? 36 : 48;
+        wrap.style.setProperty('--subtitle-height', height + 'px');
+        // Restart animation to recalculate
+        scroll.style.animation = 'none';
+        scroll.offsetHeight; // Trigger reflow
+        scroll.style.animation = '';
+    }
+}
+
+updateSubtitleHeight();
+window.addEventListener('resize', updateSubtitleHeight);
