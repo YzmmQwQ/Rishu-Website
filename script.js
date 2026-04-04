@@ -26,7 +26,7 @@ const translations = {
     }
 };
 
-const langNames = { zh: '中文', en: 'English', ja: '日本語' };
+const langNames = { zh: '中文', en: 'ENGLISH', ja: '日本語' };
 let currentLang = localStorage.getItem('lang') || 'zh';
 
 function toggleLangMenu() {
