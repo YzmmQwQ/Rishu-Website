@@ -647,8 +647,8 @@ a {
     position: fixed;
     bottom: 24px;
     right: 24px;
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     background: var(--bg);
     border: 1px solid var(--stroke);
     cursor: pointer;
