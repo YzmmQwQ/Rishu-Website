@@ -121,23 +121,22 @@
                     <span class="tag accent">Jay Chou</span>
                     <span class="tag accent">Hatsune Miku</span>
                 </div>
-                <a href="https://docs.rishu.cfd/learn-more/playlist" class="now-playing">
-                    <div class="now-playing-cover"><img src="img/jay.jpg" /></div>
+                <div class="now-playing">
+                    <div class="now-playing-cover"><img id="npCover" src="img/jay.jpg" /></div>
                     <div class="now-playing-info">
                         <div class="label">Now Playing</div>
-                        <div class="song">楓 - 周杰倫</div>
+                        <div class="song" id="npSong">楓 - 周杰倫</div>
                         <div class="lyrics-scroll-wrap">
-                            <div class="lyrics-scroll">
-                                <span class="lyrics-item">緩緩飄落的楓葉像思念</span>
-                                <span class="lyrics-item">我點燃燭火溫暖 歲末的秋天</span>
-                                <span class="lyrics-item">極光掠奪天邊</span>
-                                <span class="lyrics-item">北風掠過想你的容顏</span>
-                                <span class="lyrics-item">我把愛燒成了落葉</span>
-                                <span class="lyrics-item">卻換不回熟悉的那張臉</span>
+                            <div class="lyrics-scroll" id="npLyrics">
                             </div>
                         </div>
                     </div>
-                </a>
+                    <button class="np-play-btn" id="npPlayBtn" title="播放">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -178,6 +177,8 @@
 
         <div class="footer">
             MADE BY <a href="https://yz-mm.top">YZMM</a>
+            <span class="footer-divider">|</span>
+            <a href="https://icp.gov.moe/?keyword=20260823" target="_blank" class="icp-link">萌ICP备20260823号</a>
         </div>
     </div>
 

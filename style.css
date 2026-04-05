@@ -456,8 +456,10 @@ a {
     align-items: center;
     gap: 12px;
     padding: 12px;
+    padding-right: 52px;
     background: var(--fill);
     margin-top: 12px;
+    position: relative;
 }
 
 .now-playing-cover {
@@ -471,6 +473,11 @@ a {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.now-playing-info {
+    flex: 1;
+    min-width: 0;
 }
 
 .now-playing-info .label {
@@ -490,6 +497,27 @@ a {
     color: var(--fg);
 }
 
+.np-play-btn {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--bg-inverted);
+    background: var(--bg-inverted);
+    color: var(--bg);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.np-play-btn:hover {
+    background: var(--bg-inverted-hover);
+    border-color: var(--bg-inverted-hover);
+}
+
 /* Lyrics scroll */
 .lyrics-scroll-wrap {
     height: 20px;
@@ -500,23 +528,7 @@ a {
     display: flex;
     flex-direction: column;
     will-change: transform;
-    animation: lyricsScroll 18s cubic-bezier(0.8, 0, 0.2, 1) infinite;
-}
-
-@keyframes lyricsScroll {
-    0% { transform: translateY(0); }
-    11.67% { transform: translateY(0); }
-    16.67% { transform: translateY(-20px); }
-    28.33% { transform: translateY(-20px); }
-    33.33% { transform: translateY(-40px); }
-    45% { transform: translateY(-40px); }
-    50% { transform: translateY(-60px); }
-    61.67% { transform: translateY(-60px); }
-    66.67% { transform: translateY(-80px); }
-    78.33% { transform: translateY(-80px); }
-    83.33% { transform: translateY(-100px); }
-    95% { transform: translateY(-100px); }
-    100% { transform: translateY(0); }
+    transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1);
 }
 
 .lyrics-item {
@@ -640,6 +652,20 @@ a {
 .footer a {
     color: inherit;
     text-decoration: none;
+}
+
+.footer-divider {
+    margin: 0 12px;
+    color: var(--stroke);
+}
+
+.icp-link {
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+
+.icp-link:hover {
+    opacity: 1;
 }
 
 /* Back to Top Button */

@@ -127,3 +127,101 @@ function updateSubtitleHeight() {
 
 updateSubtitleHeight();
 window.addEventListener('resize', updateSubtitleHeight);
+
+// Now Playing 随机歌曲
+const songs = [
+    {
+        title: '擱淺',
+        artist: '周杰倫',
+        cover: 'img/yhm.jpg',
+        lyrics: ['我只能永遠讀著對白', '讀著我給妳的傷害', '我原諒不了我', '就請妳當作我也不在', '我睜開雙眼看著空白', '忘記妳給我的期待', '讀完了一來', '我很快就離開']
+    },
+    {
+        title: '簡單愛',
+        artist: '周杰倫',
+        cover: 'img/ftx.jpg',
+        lyrics: ['我想就這樣牽著妳的手不放開', '愛能不能夠永遠單純沒有悲哀', '我想帶妳騎單車', '我想和妳看棒球', '想這樣沒擔憂唱著歌一直走', '我想就這樣牽著妳的手不放開', '愛能不能夠簡簡單單沒有傷害', '妳靠著我的肩膀', '妳在我胸口睡著', '像這樣的生活 我愛妳 妳愛我']
+    },
+    {
+        title: '楓',
+        artist: '周杰倫',
+        cover: 'img/jay.jpg',
+        lyrics: ['緩緩飄落的楓葉像思念', '我點燃燭火溫暖歲末的秋天', '極光掠奪天邊', '北風掠過想妳的容顏', '我把愛燒成了落葉', '卻換不回熟悉的那張臉']
+    },
+    {
+        title: '反方向的鐘',
+        artist: '周杰倫',
+        cover: 'img/jay.jpg',
+        lyrics: ['穿梭時間的畫面的鐘', '從反方向開始移動', '回到當初愛你的時空', '停格內容不忠', '所有回憶對著我進攻', '我的傷口 被你拆封', '誓言太沉重 淚被縱容', '臉上洶湧 失控']
+    },
+    {
+        title: '七里香',
+        artist: '周杰倫',
+        cover: 'img/yhm.jpg',
+        lyrics: ['雨下整夜 我的愛溢出就像雨水', '院子落葉 給我的思念厚厚一疊', '幾句是非 也無法將我的熱情冷卻', '妳出現在我詩的每一頁']
+    },
+    {
+        title: '晴天',
+        artist: '周杰倫',
+        cover: 'img/yhm.jpg',
+        lyrics: ['刮風這天 我試過握著妳手', '但偏偏 雨漸漸', '大到我看妳不見', '還要多久 我才能在妳身邊', '等到放晴的那天', '也許我會比較好一點']
+    },
+    {
+        title: '一路向北',
+        artist: '周杰倫',
+        cover: 'img/feng.jpg',
+        lyrics: ['我一路向北 離開有妳的季節', '妳說妳好累 已無法再愛上誰', '風在山路吹 過往的畫面', '全都是我不對', '細數慚愧 我傷妳幾回']
+    },
+    {
+        title: '愛在西元前',
+        artist: '周杰倫',
+        cover: 'img/ftx.jpg',
+        lyrics: ['古巴比倫王頒布了漢摩拉比法典', '刻在黑色的玄武岩', '距今已經三千七百多年', '妳在櫥窗前凝視碑文的字眼', '我給妳的愛寫在西元前', '深埋在美索不達米亞平原', '幾十個世紀後出土發現', '泥板上的字跡依然清晰可見']
+    }
+];
+
+let currentSongIndex = Math.floor(Math.random() * songs.length);
+let currentLyricIndex = 0;
+let lyricTimer = null;
+
+function updateNowPlaying() {
+    const song = songs[currentSongIndex];
+    const cover = document.getElementById('npCover');
+    const songEl = document.getElementById('npSong');
+    const lyricsEl = document.getElementById('npLyrics');
+
+    cover.src = song.cover;
+    songEl.textContent = `${song.title} - ${song.artist}`;
+
+    // 设置歌词
+    lyricsEl.innerHTML = '';
+    song.lyrics.forEach(line => {
+        const span = document.createElement('span');
+        span.className = 'lyrics-item';
+        span.textContent = line;
+        lyricsEl.appendChild(span);
+    });
+
+    // 重置歌词滚动
+    currentLyricIndex = 0;
+    lyricsEl.style.transform = 'translateY(0)';
+}
+
+function scrollLyrics() {
+    const song = songs[currentSongIndex];
+    if (!song.lyrics || song.lyrics.length === 0) return;
+
+    currentLyricIndex = (currentLyricIndex + 1) % song.lyrics.length;
+    const lyricsEl = document.getElementById('npLyrics');
+    lyricsEl.style.transform = `translateY(-${currentLyricIndex * 20}px)`;
+}
+
+// 初始化
+updateNowPlaying();
+if (lyricTimer) clearInterval(lyricTimer);
+lyricTimer = setInterval(scrollLyrics, 3000);
+
+// 播放按钮点击 - 暂时跳转到歌单页
+document.getElementById('npPlayBtn').addEventListener('click', () => {
+    window.open('https://docs.rishu.cfd/learn-more/playlist', '_blank');
+});
