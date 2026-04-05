@@ -6,7 +6,8 @@ const translations = {
         quote: '自由，热爱。',
         linksTitle: '这或许是你唯一找到我的方法？',
         emailTitle: '来封 Email？',
-        qqTitle: '加我 QQ？'
+        qqTitle: '加我 QQ？',
+        travel: '异次元之旅'
     },
     en: {
         langHint: 'Huh? Multiple languages?',
@@ -14,7 +15,8 @@ const translations = {
         quote: 'Freedom, passion.',
         linksTitle: 'Maybe the only way to find me?',
         emailTitle: 'Send me an Email?',
-        qqTitle: 'Add me on QQ?'
+        qqTitle: 'Add me on QQ?',
+        travel: 'Interdimensional Journey'
     },
     ja: {
         langHint: 'え？多言語対応なの？',
@@ -22,7 +24,8 @@ const translations = {
         quote: '自由、情熱。',
         linksTitle: '私を見つける唯一の方法かも？',
         emailTitle: 'メールを送る？',
-        qqTitle: 'QQで連絡する？'
+        qqTitle: 'QQで連絡する？',
+        travel: '異次元の旅'
     }
 };
 
