@@ -720,7 +720,7 @@ code {
 .nav-link {
     display: flex;
     align-items: center;
-    padding: 6px 10px;
+    padding: 0 10px;
     background: var(--bg);
     border: 1px solid var(--stroke);
     font-family: 'IBM Plex Sans', 'MiSans', sans-serif;
@@ -729,6 +729,16 @@ code {
     color: var(--fg-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.02em;
+    height: 31px;
+}
+
+.nav-link svg {
+    display: none;
+}
+
+.travel-link svg {
+    display: block;
+    margin-right: 4px;
 }
 
 .nav-link:hover {
@@ -745,7 +755,7 @@ code {
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 6px 10px;
+    padding: 0 10px;
     background: var(--bg);
     border: 1px solid var(--stroke);
     cursor: pointer;
@@ -753,6 +763,11 @@ code {
     font-size: 11px;
     font-weight: 500;
     color: var(--fg-tertiary);
+    height: 31px;
+}
+
+.lang-btn .lang-icon {
+    display: none;
 }
 
 .lang-btn:hover {
@@ -809,7 +824,7 @@ code {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 0 10px;
     background: var(--bg);
     border: 1px solid var(--stroke);
     cursor: pointer;
@@ -818,6 +833,7 @@ code {
     font-weight: 500;
     line-height: 17px;
     color: var(--fg-tertiary);
+    height: 31px;
 }
 
 .theme-toggle:hover {
@@ -860,5 +876,68 @@ code {
 
     .info-item:not(:last-child) {
         border-bottom: 1px solid var(--stroke);
+    }
+
+    /* 导航栏小屏只显示图标 */
+    .nav-link svg {
+        display: block;
+        width: 18px;
+        height: 18px;
+    }
+
+    .nav-link span,
+    .theme-toggle #themeText {
+        display: none;
+    }
+
+    .nav-link {
+        padding: 0 !important;
+        width: 24px;
+        height: 24px;
+        justify-content: center;
+        border: none;
+        background: transparent;
+    }
+
+    .theme-toggle {
+        padding: 0 !important;
+        width: 24px;
+        height: 24px;
+        justify-content: center;
+        border: none;
+        background: transparent;
+    }
+
+    .theme-toggle svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* 语言按钮小屏显示图标 */
+    .lang-btn .lang-icon {
+        display: block;
+        width: 18px;
+        height: 18px;
+    }
+
+    #currentLang {
+        display: none;
+    }
+
+    .lang-btn svg:last-child {
+        display: none;
+    }
+
+    .lang-btn {
+        padding: 0 !important;
+        width: 24px;
+        height: 24px;
+        justify-content: center;
+        border: none;
+        background: transparent;
+    }
+
+    .nav-right {
+        gap: 8px;
     }
 }
