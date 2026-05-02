@@ -136,7 +136,7 @@ const songs = [
     {
         title: '擱淺',
         artist: '周杰倫',
-        cover: 'img/yhm.jpg',
+        cover: 'img/qlx.jpg',
         lyrics: ['我只能永遠讀著對白', '讀著我給妳的傷害', '我原諒不了我', '就請妳當作我也不在', '我睜開雙眼看著空白', '忘記妳給我的期待', '讀完了一來', '我很快就離開']
     },
     {
@@ -160,7 +160,7 @@ const songs = [
     {
         title: '七里香',
         artist: '周杰倫',
-        cover: 'img/yhm.jpg',
+        cover: 'img/qlx.jpg',
         lyrics: ['雨下整夜 我的愛溢出就像雨水', '院子落葉 給我的思念厚厚一疊', '幾句是非 也無法將我的熱情冷卻', '妳出現在我詩的每一頁']
     },
     {
