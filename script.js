@@ -148,7 +148,7 @@ const songs = [
     {
         title: '楓',
         artist: '周杰倫',
-        cover: 'img/jay.jpg',
+        cover: 'img/feng.jpg',
         lyrics: ['緩緩飄落的楓葉像思念', '我點燃燭火溫暖歲末的秋天', '極光掠奪天邊', '北風掠過想妳的容顏', '我把愛燒成了落葉', '卻換不回熟悉的那張臉']
     },
     {
