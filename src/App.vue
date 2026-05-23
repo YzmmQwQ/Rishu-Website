@@ -115,12 +115,185 @@ const songs = [
 const currentLang = ref(localStorage.getItem('lang') || 'zh');
 const isLangMenuOpen = ref(false);
 const isDark = ref(false);
+const showLoader = ref(true);
+const loaderLeaving = ref(false);
+const loaderSvg = ref(null);
+const loaderWavePaths = ref([]);
 const showBackToTop = ref(false);
 const subtitleWrap = ref(null);
 const subtitleScroll = ref(null);
 const currentSongIndex = ref(Math.floor(Math.random() * songs.length));
 const currentLyricIndex = ref(0);
 let lyricTimer;
+let loaderTimer;
+let waveFrame;
+let waveStart = 0;
+let loaderWaveLines = [];
+let loaderMouse = {
+  x: -1000,
+  y: 0,
+  sx: -1000,
+  sy: 0,
+  lx: -1000,
+  ly: 0,
+  velocity: 0,
+  smoothVelocity: 0,
+  angle: 0,
+  set: false
+};
+
+function fadeNoise(t) {
+  return t * t * (3 - 2 * t);
+}
+
+function hashNoise(x, y) {
+  const value = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
+
+  return value - Math.floor(value);
+}
+
+function valueNoise(x, y) {
+  const ix = Math.floor(x);
+  const iy = Math.floor(y);
+  const fx = x - ix;
+  const fy = y - iy;
+  const ux = fadeNoise(fx);
+  const uy = fadeNoise(fy);
+  const a = hashNoise(ix, iy);
+  const b = hashNoise(ix + 1, iy);
+  const c = hashNoise(ix, iy + 1);
+  const d = hashNoise(ix + 1, iy + 1);
+  const x1 = a + (b - a) * ux;
+  const x2 = c + (d - c) * ux;
+
+  return (x1 + (x2 - x1) * uy) * 2 - 1;
+}
+
+function resetLoaderWaves(width, height) {
+  const xGap = width <= 600 ? 18 : 13;
+  const yGap = width <= 600 ? 28 : 22;
+  const totalLines = Math.ceil((width + 220) / xGap);
+  const totalPoints = Math.ceil((height + 80) / yGap);
+  const xStart = (width - totalLines * xGap) / 2;
+  const yStart = (height - totalPoints * yGap) / 2;
+
+  loaderWaveLines = Array.from({ length: totalLines + 1 }, (_, lineIndex) => (
+    Array.from({ length: totalPoints + 1 }, (_, pointIndex) => ({
+      x: xStart + xGap * lineIndex,
+      y: yStart + yGap * pointIndex,
+      wave: { x: 0, y: 0 },
+      cursor: { x: 0, y: 0, vx: 0, vy: 0 }
+    }))
+  ));
+}
+
+function setLoaderWaves(time = performance.now()) {
+  const svg = loaderSvg.value;
+
+  if (!svg) return;
+
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const elapsed = time - waveStart;
+  const expectedLines = Math.ceil((width + 220) / (width <= 600 ? 16 : 11)) + 1;
+  const mouse = loaderMouse;
+
+  if (loaderWaveLines.length !== expectedLines) {
+    resetLoaderWaves(width, height);
+  }
+
+  mouse.sx += (mouse.x - mouse.sx) * 0.1;
+  mouse.sy += (mouse.y - mouse.sy) * 0.1;
+
+  const dx = mouse.x - mouse.lx;
+  const dy = mouse.y - mouse.ly;
+  const distance = Math.hypot(dx, dy);
+
+  mouse.velocity = distance;
+  mouse.smoothVelocity += (distance - mouse.smoothVelocity) * 0.1;
+  mouse.smoothVelocity = Math.min(100, mouse.smoothVelocity);
+  mouse.angle = Math.atan2(dy, dx);
+  mouse.lx = mouse.x;
+  mouse.ly = mouse.y;
+
+  loaderWavePaths.value = loaderWaveLines.map((points, lineIndex) => {
+    const movedPoints = points.map((point) => {
+      const move =
+        valueNoise(
+          (point.x + elapsed * 0.0125) * 0.002,
+          (point.y + elapsed * 0.005) * 0.0015
+        ) * 11;
+
+      point.wave.x = Math.cos(move) * 34;
+      point.wave.y = Math.sin(move) * 12;
+
+      const forceDx = point.x - mouse.sx;
+      const forceDy = point.y - mouse.sy;
+      const forceDistance = Math.hypot(forceDx, forceDy);
+      const radius = Math.max(145, mouse.smoothVelocity * 2.1);
+
+      if (mouse.set && forceDistance < radius) {
+        const strength = 1 - forceDistance / radius;
+        const force = Math.cos(forceDistance * 0.001) * strength;
+
+        point.cursor.vx += Math.cos(mouse.angle) * force * radius * mouse.smoothVelocity * 0.00038;
+        point.cursor.vy += Math.sin(mouse.angle) * force * radius * mouse.smoothVelocity * 0.00038;
+      }
+
+      point.cursor.vx += (0 - point.cursor.x) * 0.005;
+      point.cursor.vy += (0 - point.cursor.y) * 0.005;
+      point.cursor.vx *= 0.925;
+      point.cursor.vy *= 0.925;
+      point.cursor.x += point.cursor.vx * 2;
+      point.cursor.y += point.cursor.vy * 2;
+      point.cursor.x = Math.min(100, Math.max(-100, point.cursor.x));
+      point.cursor.y = Math.min(100, Math.max(-100, point.cursor.y));
+
+      return {
+        x: Math.round((point.x + point.wave.x + point.cursor.x) * 10) / 10,
+        y: Math.round((point.y + point.wave.y + point.cursor.y) * 10) / 10
+      };
+    });
+
+    let d = `M ${movedPoints[0].x} ${movedPoints[0].y}`;
+
+    for (let pointIndex = 1; pointIndex < movedPoints.length - 1; pointIndex += 1) {
+      const point = movedPoints[pointIndex];
+      const next = movedPoints[pointIndex + 1];
+      const midX = Math.round(((point.x + next.x) / 2) * 10) / 10;
+      const midY = Math.round(((point.y + next.y) / 2) * 10) / 10;
+
+      d += ` Q ${point.x} ${point.y} ${midX} ${midY}`;
+    }
+
+    const last = movedPoints[movedPoints.length - 1];
+    d += ` L ${last.x} ${last.y}`;
+
+    return {
+      d
+    };
+  });
+}
+
+function animateLoaderWaves(time) {
+  setLoaderWaves(time);
+  waveFrame = window.requestAnimationFrame(animateLoaderWaves);
+}
+
+function handleLoaderPointerMove(event) {
+  const mouse = loaderMouse;
+
+  mouse.x = event.clientX;
+  mouse.y = event.clientY;
+
+  if (!mouse.set) {
+    mouse.sx = mouse.x;
+    mouse.sy = mouse.y;
+    mouse.lx = mouse.x;
+    mouse.ly = mouse.y;
+    mouse.set = true;
+  }
+}
 
 const text = computed(() => translations[currentLang.value]);
 const currentSong = computed(() => songs[currentSongIndex.value]);
@@ -181,9 +354,18 @@ function scrollLyrics() {
   currentLyricIndex.value = (currentLyricIndex.value + 1) % lyrics.length;
 }
 
+function finishLoader() {
+  loaderLeaving.value = true;
+
+  window.setTimeout(() => {
+    showLoader.value = false;
+  }, 620);
+}
+
 onMounted(async () => {
   const savedTheme = localStorage.getItem('theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   isDark.value = savedTheme === 'dark' || (!savedTheme && prefersDark);
   document.documentElement.classList.toggle('dark', isDark.value);
@@ -191,21 +373,64 @@ onMounted(async () => {
   await nextTick();
   updateSubtitleHeight();
 
+  if (reducedMotion) {
+    showLoader.value = false;
+  } else {
+    waveStart = performance.now();
+    resetLoaderWaves(window.innerWidth, window.innerHeight);
+    setLoaderWaves(waveStart);
+    waveFrame = window.requestAnimationFrame(animateLoaderWaves);
+    loaderTimer = window.setTimeout(finishLoader, 1900);
+  }
+
   lyricTimer = window.setInterval(scrollLyrics, 3000);
   document.addEventListener('click', handleDocumentClick);
+  window.addEventListener('pointermove', handleLoaderPointerMove, { passive: true });
   window.addEventListener('scroll', handleScroll);
   window.addEventListener('resize', updateSubtitleHeight);
 });
 
 onBeforeUnmount(() => {
+  window.clearTimeout(loaderTimer);
+  window.cancelAnimationFrame(waveFrame);
   window.clearInterval(lyricTimer);
   document.removeEventListener('click', handleDocumentClick);
+  window.removeEventListener('pointermove', handleLoaderPointerMove);
   window.removeEventListener('scroll', handleScroll);
   window.removeEventListener('resize', updateSubtitleHeight);
 });
 </script>
 
 <template>
+  <div v-if="showLoader" class="loader-screen" :class="{ 'is-leaving': loaderLeaving }" aria-label="Loading Rishu">
+    <svg ref="loaderSvg" class="loader-waves" aria-hidden="true">
+      <path
+        v-for="(path, index) in loaderWavePaths"
+        :key="index"
+        :d="path.d"
+      />
+    </svg>
+    <div class="loader-frame">
+      <div class="loader-mark" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="loader-copy">
+        <div class="loader-kicker">HELLO WORLD!</div>
+        <div class="loader-title">RISHU</div>
+        <div class="loader-line">
+          <span>BOOTING PERSONALITY</span>
+          <span>2026</span>
+        </div>
+      </div>
+      <div class="loader-progress" aria-hidden="true">
+        <span></span>
+      </div>
+    </div>
+  </div>
+
   <div class="dotted-bg"></div>
 
   <div class="container">
