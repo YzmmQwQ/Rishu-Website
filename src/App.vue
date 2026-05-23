@@ -44,6 +44,7 @@ const subtitleItems = [
   'LOVE U FOREVER',
   'SIMPLE STUDENT'
 ];
+const titleLetters = "IT'S RISHU.".split('');
 const infoItems = [
   ['Birthday', '2009.08.23'],
   ['Height', '183cm'],
@@ -120,6 +121,7 @@ const loaderLeaving = ref(false);
 const loaderSvg = ref(null);
 const loaderWavePaths = ref([]);
 const showBackToTop = ref(false);
+const scrollProgress = ref(0);
 const subtitleWrap = ref(null);
 const subtitleScroll = ref(null);
 const currentSongIndex = ref(Math.floor(Math.random() * songs.length));
@@ -331,6 +333,8 @@ function handleDocumentClick(event) {
 
 function handleScroll() {
   showBackToTop.value = window.scrollY > 300;
+  const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+  scrollProgress.value = Math.min(window.scrollY / maxScroll, 1);
 }
 
 function updateSubtitleHeight() {
@@ -372,6 +376,7 @@ onMounted(async () => {
 
   await nextTick();
   updateSubtitleHeight();
+  handleScroll();
 
   if (reducedMotion) {
     showLoader.value = false;
@@ -432,6 +437,10 @@ onBeforeUnmount(() => {
   </div>
 
   <div class="dotted-bg"></div>
+  <div class="scroll-progress" :style="{ transform: `scaleX(${scrollProgress})` }" aria-hidden="true"></div>
+  <div class="side-scroll-indicator" aria-hidden="true">
+    <span :style="{ transform: `scaleY(${Math.max(scrollProgress, 0.08)})` }"></span>
+  </div>
 
   <div class="container">
     <nav class="top-bar">
@@ -501,10 +510,26 @@ onBeforeUnmount(() => {
     <div class="section-label">ABOUT MYSELF</div>
 
     <div class="header">
+      <div class="hero-grid" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
       <div class="avatar-large">
         <img :src="rishuAvatar" alt="Rishu">
       </div>
-      <h1 class="title-main">IT'S RISHU.</h1>
+      <h1 class="title-main" aria-label="IT'S RISHU.">
+        <span
+          v-for="(letter, index) in titleLetters"
+          :key="`${letter}-${index}`"
+          class="title-letter"
+          :style="{ '--letter-index': index }"
+          aria-hidden="true"
+        >{{ letter === ' ' ? '\u00A0' : letter }}</span>
+      </h1>
       <div ref="subtitleWrap" class="subtitle-scroll-wrap">
         <div ref="subtitleScroll" class="subtitle-scroll">
           <span v-for="item in subtitleItems" :key="item" class="subtitle-item">{{ item }}</span>
@@ -516,18 +541,26 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="bio">{{ text.bio }}</div>
+    <div class="bio reveal-block">{{ text.bio }}</div>
 
-    <div class="divider"></div>
+    <div class="divider tech-divider" aria-hidden="true">
+      <span class="tech-divider-triangle"></span>
+      <span class="tech-divider-code">01010010</span>
+      <span class="tech-divider-stripes"></span>
+      <span class="tech-divider-code tech-divider-code-optional">RISHU</span>
+      <span class="tech-divider-stripes"></span>
+      <span class="tech-divider-code">11001001</span>
+      <span class="tech-divider-triangle"></span>
+    </div>
 
-    <div class="info-grid">
+    <div class="info-grid reveal-block">
       <div v-for="[label, value] in infoItems" :key="label" class="info-item">
         <div class="label">{{ label }}</div>
         <div class="value">{{ value }}</div>
       </div>
     </div>
 
-    <div class="tags-row">
+    <div class="tags-row reveal-block">
       <div class="tags-section">
         <div class="tags-title">PLAYING</div>
         <div class="tags">
@@ -562,11 +595,19 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="divider"></div>
+    <div class="divider tech-divider" aria-hidden="true">
+      <span class="tech-divider-triangle"></span>
+      <span class="tech-divider-code">LISTEN</span>
+      <span class="tech-divider-stripes"></span>
+      <span class="tech-divider-code tech-divider-code-optional">000823</span>
+      <span class="tech-divider-stripes"></span>
+      <span class="tech-divider-code">QUOTE</span>
+      <span class="tech-divider-triangle"></span>
+    </div>
 
-    <div class="quote">{{ text.quote }}</div>
+    <div class="quote reveal-block">{{ text.quote }}</div>
 
-    <div class="links-section">
+    <div class="links-section reveal-block">
       <div class="section-label">CONTACT ME</div>
       <div class="links-grid">
         <a href="mailto:rishu@rishu.cfd" class="link-card">
