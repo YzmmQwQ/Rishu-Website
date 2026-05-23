@@ -118,18 +118,27 @@ const isLangMenuOpen = ref(false);
 const isDark = ref(false);
 const showLoader = ref(true);
 const loaderLeaving = ref(false);
+const showFrame = ref(true);
+const frameLeaving = ref(false);
 const loaderSvg = ref(null);
+const persistentSvg = ref(null);
 const loaderWavePaths = ref([]);
 const showBackToTop = ref(false);
 const scrollProgress = ref(0);
 const subtitleWrap = ref(null);
 const subtitleScroll = ref(null);
+const cursorEl = ref(null);
 const currentSongIndex = ref(Math.floor(Math.random() * songs.length));
 const currentLyricIndex = ref(0);
 let lyricTimer;
 let loaderTimer;
 let waveFrame;
 let waveStart = 0;
+let letterFlipTimer;
+let cursorRAF;
+const cursorPos = { x: -100, y: -100 };
+const cursorSmooth = { x: -100, y: -100 };
+const cursorListeners = [];
 let loaderWaveLines = [];
 let loaderMouse = {
   x: -1000,
@@ -190,10 +199,6 @@ function resetLoaderWaves(width, height) {
 }
 
 function setLoaderWaves(time = performance.now()) {
-  const svg = loaderSvg.value;
-
-  if (!svg) return;
-
   const width = window.innerWidth;
   const height = window.innerHeight;
   const elapsed = time - waveStart;
@@ -358,12 +363,129 @@ function scrollLyrics() {
   currentLyricIndex.value = (currentLyricIndex.value + 1) % lyrics.length;
 }
 
+const flipDirections = [
+  { x: '0em', y: '-0.25em', rot: '-9deg' },
+  { x: '0.25em', y: '0em', rot: '7deg' },
+  { x: '0em', y: '0.25em', rot: '9deg' },
+  { x: '-0.25em', y: '0em', rot: '-7deg' }
+];
+
+function tickLetterFlips() {
+  if (Math.random() > 0.05) return;
+
+  const letters = document.querySelectorAll('.title-letter');
+
+  if (!letters.length) return;
+
+  const el = letters[Math.floor(Math.random() * letters.length)];
+
+  if (el.dataset.flipping === '1') return;
+
+  const dir = flipDirections[Math.floor(Math.random() * flipDirections.length)];
+
+  el.dataset.flipping = '1';
+
+  const anim = el.animate(
+    [
+      { transform: 'translate(0, 0) rotate(0deg)' },
+      { transform: `translate(${dir.x}, ${dir.y}) rotate(${dir.rot})`, offset: 0.45 },
+      { transform: 'translate(0, 0) rotate(0deg)' }
+    ],
+    {
+      duration: 850,
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      composite: 'add'
+    }
+  );
+
+  anim.onfinish = () => {
+    el.dataset.flipping = '0';
+  };
+}
+
+function tickCursor() {
+  cursorSmooth.x += (cursorPos.x - cursorSmooth.x) * 0.25;
+  cursorSmooth.y += (cursorPos.y - cursorSmooth.y) * 0.25;
+
+  if (cursorEl.value) {
+    cursorEl.value.style.transform =
+      `translate3d(${cursorSmooth.x}px, ${cursorSmooth.y}px, 0) translate(-50%, -50%)`;
+  }
+
+  cursorRAF = window.requestAnimationFrame(tickCursor);
+}
+
+function setupCursor() {
+  if (window.matchMedia('(hover: none), (pointer: coarse)').matches) return;
+
+  document.body.classList.add('has-custom-cursor');
+
+  const onPointerMove = (e) => {
+    cursorPos.x = e.clientX;
+    cursorPos.y = e.clientY;
+  };
+  window.addEventListener('pointermove', onPointerMove, { passive: true });
+  cursorListeners.push({ target: window, type: 'pointermove', fn: onPointerMove });
+
+  cursorRAF = window.requestAnimationFrame(tickCursor);
+
+  const hoverSelectors =
+    'a, button, .info-item, .tag, .link-card, .lang-btn, .theme-toggle, .np-play-btn, .nav-link, .back-to-top';
+  document.querySelectorAll(hoverSelectors).forEach((el) => {
+    const onEnter = () => cursorEl.value?.classList.add('is-hover');
+    const onLeave = () => cursorEl.value?.classList.remove('is-hover');
+    el.addEventListener('pointerenter', onEnter);
+    el.addEventListener('pointerleave', onLeave);
+    cursorListeners.push({ target: el, type: 'pointerenter', fn: onEnter });
+    cursorListeners.push({ target: el, type: 'pointerleave', fn: onLeave });
+  });
+
+  const magneticSelectors =
+    '.theme-toggle, .lang-btn, .nav-link, .np-play-btn, .back-to-top';
+  document.querySelectorAll(magneticSelectors).forEach((el) => {
+    el.classList.add('is-magnetic');
+
+    const onMagnetic = (e) => {
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width / 2) * 0.4;
+      const y = (e.clientY - rect.top - rect.height / 2) * 0.4;
+      el.style.setProperty('--mx', x);
+      el.style.setProperty('--my', y);
+    };
+    const onReset = () => {
+      el.style.setProperty('--mx', 0);
+      el.style.setProperty('--my', 0);
+    };
+
+    el.addEventListener('pointermove', onMagnetic);
+    el.addEventListener('pointerleave', onReset);
+    cursorListeners.push({ target: el, type: 'pointermove', fn: onMagnetic });
+    cursorListeners.push({ target: el, type: 'pointerleave', fn: onReset });
+  });
+
+  const onWindowLeave = () => cursorEl.value?.classList.add('is-hidden');
+  const onWindowEnter = () => cursorEl.value?.classList.remove('is-hidden');
+  document.addEventListener('mouseleave', onWindowLeave);
+  document.addEventListener('mouseenter', onWindowEnter);
+  cursorListeners.push({ target: document, type: 'mouseleave', fn: onWindowLeave });
+  cursorListeners.push({ target: document, type: 'mouseenter', fn: onWindowEnter });
+}
+
 function finishLoader() {
   loaderLeaving.value = true;
 
   window.setTimeout(() => {
     showLoader.value = false;
+    startFrameRecede();
   }, 620);
+}
+
+function startFrameRecede() {
+  frameLeaving.value = true;
+
+  window.setTimeout(() => {
+    showFrame.value = false;
+  }, 1100);
 }
 
 onMounted(async () => {
@@ -389,6 +511,13 @@ onMounted(async () => {
   }
 
   lyricTimer = window.setInterval(scrollLyrics, 3000);
+
+  if (!reducedMotion) {
+    letterFlipTimer = window.setInterval(tickLetterFlips, 200);
+  }
+
+  setupCursor();
+
   document.addEventListener('click', handleDocumentClick);
   window.addEventListener('pointermove', handleLoaderPointerMove, { passive: true });
   window.addEventListener('scroll', handleScroll);
@@ -398,7 +527,13 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.clearTimeout(loaderTimer);
   window.cancelAnimationFrame(waveFrame);
+  window.cancelAnimationFrame(cursorRAF);
   window.clearInterval(lyricTimer);
+  window.clearInterval(letterFlipTimer);
+  cursorListeners.forEach(({ target, type, fn }) => {
+    target.removeEventListener(type, fn);
+  });
+  document.body.classList.remove('has-custom-cursor');
   document.removeEventListener('click', handleDocumentClick);
   window.removeEventListener('pointermove', handleLoaderPointerMove);
   window.removeEventListener('scroll', handleScroll);
@@ -434,6 +569,24 @@ onBeforeUnmount(() => {
         <span></span>
       </div>
     </div>
+  </div>
+
+  <svg
+    ref="persistentSvg"
+    :class="['loader-waves', 'persistent-waves', { 'is-visible': !showLoader }]"
+    aria-hidden="true">
+    <path
+      v-for="(path, index) in loaderWavePaths"
+      :key="`p-${index}`"
+      :d="path.d"
+    />
+  </svg>
+
+  <div v-if="showFrame" class="site-frame" :class="{ 'is-leaving': frameLeaving }" aria-hidden="true">
+    <span class="site-frame-side site-frame-top"></span>
+    <span class="site-frame-side site-frame-right"></span>
+    <span class="site-frame-side site-frame-bottom"></span>
+    <span class="site-frame-side site-frame-left"></span>
   </div>
 
   <div class="dotted-bg"></div>
@@ -518,8 +671,14 @@ onBeforeUnmount(() => {
         <span></span>
         <span></span>
       </div>
-      <div class="avatar-large">
-        <img :src="rishuAvatar" alt="Rishu">
+      <div class="avatar-wrap">
+        <div class="avatar-large">
+          <img :src="rishuAvatar" alt="Rishu">
+        </div>
+        <span class="avatar-corner avatar-corner-tl" aria-hidden="true"></span>
+        <span class="avatar-corner avatar-corner-tr" aria-hidden="true"></span>
+        <span class="avatar-corner avatar-corner-bl" aria-hidden="true"></span>
+        <span class="avatar-corner avatar-corner-br" aria-hidden="true"></span>
       </div>
       <h1 class="title-main" aria-label="IT'S RISHU.">
         <span
@@ -545,11 +704,11 @@ onBeforeUnmount(() => {
 
     <div class="divider tech-divider" aria-hidden="true">
       <span class="tech-divider-triangle"></span>
-      <span class="tech-divider-code">01010010</span>
+      <span class="tech-divider-code" data-alt="HELLO"><span class="tdc-text">01010010</span></span>
       <span class="tech-divider-stripes"></span>
-      <span class="tech-divider-code tech-divider-code-optional">RISHU</span>
+      <span class="tech-divider-code tech-divider-code-optional" data-alt="2009.08.23"><span class="tdc-text">RISHU</span></span>
       <span class="tech-divider-stripes"></span>
-      <span class="tech-divider-code">11001001</span>
+      <span class="tech-divider-code" data-alt="WORLD"><span class="tdc-text">11001001</span></span>
       <span class="tech-divider-triangle"></span>
     </div>
 
@@ -597,11 +756,11 @@ onBeforeUnmount(() => {
 
     <div class="divider tech-divider" aria-hidden="true">
       <span class="tech-divider-triangle"></span>
-      <span class="tech-divider-code">LISTEN</span>
+      <span class="tech-divider-code" data-alt="MUSIC"><span class="tdc-text">LISTEN</span></span>
       <span class="tech-divider-stripes"></span>
-      <span class="tech-divider-code tech-divider-code-optional">000823</span>
+      <span class="tech-divider-code tech-divider-code-optional" data-alt="GEMINI"><span class="tdc-text">000823</span></span>
       <span class="tech-divider-stripes"></span>
-      <span class="tech-divider-code">QUOTE</span>
+      <span class="tech-divider-code" data-alt="WORDS"><span class="tdc-text">QUOTE</span></span>
       <span class="tech-divider-triangle"></span>
     </div>
 
@@ -648,4 +807,6 @@ onBeforeUnmount(() => {
       <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
   </button>
+
+  <div ref="cursorEl" class="cursor" aria-hidden="true"></div>
 </template>
