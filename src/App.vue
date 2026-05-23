@@ -138,6 +138,8 @@ let letterFlipTimer;
 let cursorRAF;
 const cursorPos = { x: -100, y: -100 };
 const cursorSmooth = { x: -100, y: -100 };
+const cursorSize = { width: 26, height: 26 };
+let cursorTarget = null;
 const cursorListeners = [];
 let loaderWaveLines = [];
 let loaderMouse = {
@@ -404,12 +406,31 @@ function tickLetterFlips() {
 }
 
 function tickCursor() {
-  cursorSmooth.x += (cursorPos.x - cursorSmooth.x) * 0.25;
-  cursorSmooth.y += (cursorPos.y - cursorSmooth.y) * 0.25;
+  let x = cursorPos.x;
+  let y = cursorPos.y;
+
+  if (cursorTarget) {
+    const rect = cursorTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    x = centerX + (x - centerX) * 0.12;
+    y = centerY + (y - centerY) * 0.12;
+    cursorSize.width = rect.width + 20;
+    cursorSize.height = rect.height + 20;
+  } else {
+    cursorSize.width += (26 - cursorSize.width) * 0.2;
+    cursorSize.height += (26 - cursorSize.height) * 0.2;
+  }
+
+  cursorSmooth.x += (x - cursorSmooth.x) * 0.28;
+  cursorSmooth.y += (y - cursorSmooth.y) * 0.28;
 
   if (cursorEl.value) {
     cursorEl.value.style.transform =
       `translate3d(${cursorSmooth.x}px, ${cursorSmooth.y}px, 0) translate(-50%, -50%)`;
+    cursorEl.value.style.setProperty('--cursor-width', `${cursorSize.width}px`);
+    cursorEl.value.style.setProperty('--cursor-height', `${cursorSize.height}px`);
   }
 
   cursorRAF = window.requestAnimationFrame(tickCursor);
@@ -432,8 +453,14 @@ function setupCursor() {
   const hoverSelectors =
     'a, button, .info-item, .tag, .link-card, .lang-btn, .theme-toggle, .np-play-btn, .nav-link, .back-to-top';
   document.querySelectorAll(hoverSelectors).forEach((el) => {
-    const onEnter = () => cursorEl.value?.classList.add('is-hover');
-    const onLeave = () => cursorEl.value?.classList.remove('is-hover');
+    const onEnter = () => {
+      cursorTarget = el;
+      cursorEl.value?.classList.add('is-hover');
+    };
+    const onLeave = () => {
+      cursorTarget = null;
+      cursorEl.value?.classList.remove('is-hover');
+    };
     el.addEventListener('pointerenter', onEnter);
     el.addEventListener('pointerleave', onLeave);
     cursorListeners.push({ target: el, type: 'pointerenter', fn: onEnter });
@@ -533,6 +560,7 @@ onBeforeUnmount(() => {
   cursorListeners.forEach(({ target, type, fn }) => {
     target.removeEventListener(type, fn);
   });
+  cursorTarget = null;
   document.body.classList.remove('has-custom-cursor');
   document.removeEventListener('click', handleDocumentClick);
   window.removeEventListener('pointermove', handleLoaderPointerMove);
@@ -808,5 +836,10 @@ onBeforeUnmount(() => {
     </svg>
   </button>
 
-  <div ref="cursorEl" class="cursor" aria-hidden="true"></div>
+  <div ref="cursorEl" class="cursor" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 </template>
