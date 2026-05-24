@@ -603,10 +603,14 @@ async function fetchArchKernel() {
   try {
     const res = await fetch('https://archlinux.org/packages/core/x86_64/linux/json/', { signal: ctrl.signal });
     clearTimeout(timer);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn('[Rishu] Arch kernel request failed, falling back to bundled loader text.');
+      return null;
+    }
     return await res.json();
   } catch {
     clearTimeout(timer);
+    console.warn('[Rishu] Arch kernel request failed, falling back to bundled loader text.');
     return null;
   }
 }
