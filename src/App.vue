@@ -595,6 +595,34 @@ function scheduleBootLog() {
   }, maxT + 800));
 }
 
+const ARCH_FETCH_TIMEOUT = 500;
+
+async function fetchArchKernel() {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ARCH_FETCH_TIMEOUT);
+  try {
+    const res = await fetch('https://archlinux.org/packages/core/x86_64/linux/json/', { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    clearTimeout(timer);
+    return null;
+  }
+}
+
+function applyArchKernel(data) {
+  if (!data || !data.pkgver) return;
+  const ver = `${data.pkgver}-${data.pkgrel}`;
+  let dateStr = '';
+  try {
+    dateStr = new Date(data.build_date).toUTCString().replace(' GMT', ' +0000');
+  } catch {
+    return;
+  }
+  bootLog[0].text = `[    0.000000] Linux version ${ver} (linux@archlinux) (gcc (GCC) 16.1.1, GNU ld (GNU Binutils) 2.46) #1 SMP PREEMPT_DYNAMIC ${dateStr}`;
+}
+
 function startFrameRecede() {
   frameLeaving.value = true;
 
@@ -622,10 +650,8 @@ onMounted(async () => {
     resetLoaderWaves(window.innerWidth, window.innerHeight);
     setLoaderWaves(waveStart);
     waveFrame = window.requestAnimationFrame(animateLoaderWaves);
-    loaderTimer = window.setTimeout(finishLoader, 1900);
-    scheduleBootLog();
+    fetchArchKernel().then(applyArchKernel).finally(scheduleBootLog);
   }
-
   lyricTimer = window.setInterval(scrollLyrics, 3000);
 
   if (!reducedMotion) {
