@@ -120,8 +120,6 @@ const showLoader = ref(true);
 const loaderLeaving = ref(false);
 const showFrame = ref(true);
 const frameLeaving = ref(false);
-const loaderSvg = ref(null);
-const persistentSvg = ref(null);
 const loaderWavePaths = ref([]);
 const showBackToTop = ref(false);
 const scrollProgress = ref(0);
@@ -571,7 +569,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div v-if="showLoader" class="loader-screen" :class="{ 'is-leaving': loaderLeaving }" aria-label="Loading Rishu">
-    <svg ref="loaderSvg" class="loader-waves" aria-hidden="true">
+    <svg class="loader-waves" aria-hidden="true">
       <path
         v-for="(path, index) in loaderWavePaths"
         :key="index"
@@ -600,7 +598,6 @@ onBeforeUnmount(() => {
   </div>
 
   <svg
-    ref="persistentSvg"
     :class="['loader-waves', 'persistent-waves', { 'is-visible': !showLoader }]"
     aria-hidden="true">
     <path

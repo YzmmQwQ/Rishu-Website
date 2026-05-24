@@ -453,10 +453,7 @@ a {
     .loader-mark span,
     .loader-progress span,
     .title-letter,
-    .reveal-block,
-    .avatar-large::after,
-    .avatar-scan,
-    .avatar-radar {
+    .reveal-block {
         animation: none !important;
     }
 }
@@ -624,10 +621,6 @@ a {
     border-radius: 50%;
     overflow: hidden;
     border: 3px solid var(--stroke);
-}
-
-.avatar-radar {
-    display: none;
 }
 
 .avatar-corner {
