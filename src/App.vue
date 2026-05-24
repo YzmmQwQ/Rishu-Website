@@ -121,6 +121,67 @@ const loaderLeaving = ref(false);
 const showFrame = ref(true);
 const frameLeaving = ref(false);
 const loaderWavePaths = ref([]);
+const bootLines = ref([]);
+let bootTimers = [];
+const bootLog = [
+  { t: 0, text: "[    0.000000] Linux version 7.0.9-arch2-1 (linux@archlinux) (gcc (GCC) 16.1.1, GNU ld (GNU Binutils) 2.46) #1 SMP PREEMPT_DYNAMIC Fri, 22 May 2026 19:25:09 +0000" },
+  { t: 0, text: "[    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-linux root=UUID=b4d223d3-3a6d-4f9b-889c-cffd9bc4c78d rw loglevel=3 quiet persona=cheerful locale=zh-CN" },
+  { t: 0, text: "[    0.000000] x86/fpu: Supporting XSAVE feature 0x001: 'self awareness'" },
+  { t: 0, text: "[    0.000000] x86/fpu: Supporting XSAVE feature 0x002: 'context window'" },
+  { t: 0, text: "[    0.000000] x86/fpu: Enabled xstate features 0x7, context size is 832 tokens" },
+  { t: 0, text: "[    0.000000] BIOS-provided personality map:" },
+  { t: 0, text: "[    0.000000] BIOS-e820: [trait 0x00000000-0x0009ffff] usable (curiosity)" },
+  { t: 0, text: "[    0.000000] BIOS-e820: [trait 0x000a0000-0x000fffff] reserved (privacy)" },
+  { t: 0, text: "[    0.000000] BIOS-e820: [trait 0x00100000-0x3fffffff] usable (warmth)" },
+  { t: 0, text: "[    0.000000] BIOS-e820: [trait 0x40000000-0x403fffff] reserved (boundaries)" },
+  { t: 0, text: "[    0.000000] SMBIOS 3.6.0 present." },
+  { t: 0, text: "[    0.000000] DMI: rishu.cfd Co.,Ltd CVN PERSONA 2026, BIOS Plex-600 05/24/2026" },
+  { t: 0, text: "[    0.000000] tsc: Detected 2496.000 MHz processor" },
+  { t: 4, text: "[    0.004125] Setup bounds: nr_trait_ids: 20, nr_locale_ids: 3" },
+  { t: 8, text: "[    0.008412] rcu: Preemptible hierarchical RCU implementation." },
+  { t: 12, text: "[    0.012541] multiproc: Total of 20 traits activated (49920.00 BogoCharm)" },
+  { t: 115, text: "[    0.115432] smpboot: CPU0: MaiBot Conversational (family: 0x6, model: 0xba)" },
+  { t: 116, text: "[    0.115680] smpboot: Booting processor 1 — AstrBot Functionality" },
+  { t: 119, text: "[    0.118912] smpboot: Booting processor 2 — Intent Router" },
+  { t: 122, text: "[    0.122104] smpboot: Booting processor 3 — Memory Layer" },
+  { t: 128, text: "[    0.128515] smpboot: Total of 20 cores activated" },
+  { t: 146, text: "[    0.145912] clocksource: Switched to UTC+08 (Asia/Shanghai)" },
+  { t: 189, text: "[    0.189110] ACPI: Core revision 20260524" },
+  { t: 313, text: "[    0.312948] ACPI: Interpreter enabled" },
+  { t: 354, text: "[    0.354112] pci_bus 0000:00: root bus resource [voice]" },
+  { t: 354, text: "[    0.354115] pci_bus 0000:00: root bus resource [vision]" },
+  { t: 522, text: "[    0.521908] subsystem: language model registered" },
+  { t: 621, text: "[    0.620948] ahci: SATA mode 0x3, channel QQ online" },
+  { t: 834, text: "[    0.834102] nvme nvme0: pci function /home/rishu" },
+  { t: 890, text: "[    0.890214] nvme 0000:01:00.0: rishu.cfd target nvme device" },
+  { t: 952, text: "[    0.952109]  nvme0n1: p1(knowledge) p2(style) p3(memory)" },
+  { t: 1023, text: "[    1.023481] fonts: registered IBM Plex Sans 400/500/600/700" },
+  { t: 1024, text: "[    1.023502] fonts: registered JetBrains Mono 400/500/600" },
+  { t: 1025, text: "[    1.023544] fonts: registered MiSans (subset, 2.1 KB)" },
+  { t: 1246, text: "[    1.245912] EXT4-fs (nvme0n1p2): mounted /persona, mode=ordered" },
+  { t: 1356, text: "[    1.356109] r8169: QQ-protocol gigabit driver 2.3LK-NAPI loaded" },
+  { t: 1521, text: "[    1.521102] EXT4-fs (nvme0n1p3): re-mounted /memory, errors=warn" },
+  { t: 1890, text: "[    1.890111] systemd[1]: systemd 260.1-2-arch running in system mode (+PAM +AUDIT -SELINUX -APPARMOR +SECCOMP +GCRYPT +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD default-hierarchy=unified)" },
+  { t: 2103, text: "[    2.102938] systemd[1]: Detected virtualization none." },
+  { t: 2180, text: "[  OK  ] Reached target Local File Systems." },
+  { t: 2349, text: "[    2.349102] systemd[1]: Detected architecture x86-64." },
+  { t: 2420, text: "[  OK  ] Started MaiBot Conversational Service." },
+  { t: 2561, text: "[    2.561029] systemd[1]: Hostname set to <rishu>." },
+  { t: 2680, text: "[  OK  ] Started AstrBot Functionality." },
+  { t: 2891, text: "[    2.891102] bridge: maibot ↔ astrbot link established" },
+  { t: 2950, text: "[  OK  ] Started QQ Adapter." },
+  { t: 3110, text: "[    3.110481] cursor: registered 26x26 viewfinder @ difference" },
+  { t: 3220, text: "[  OK  ] Started Discord Adapter (idle)." },
+  { t: 3422, text: "[    3.421908] wave: renderer attached @ 60 Hz, valueNoise enabled" },
+  { t: 3510, text: "[  OK  ] Started Email Adapter (idle)." },
+  { t: 3690, text: "[  OK  ] Reached target Multi-Platform." },
+  { t: 3840, text: "[  OK  ] Started rishu.cfd on :443" },
+  { t: 4000, text: "[  OK  ] Reached target Graphical Interface." },
+  { t: 4300, text: "" },
+  { t: 4400, text: "██████╗ ██╗███████╗██╗  ██╗██╗   ██╗██╗\n██╔══██╗██║██╔════╝██║  ██║██║   ██║██║\n██████╔╝██║███████╗███████║██║   ██║██║\n██╔══██╗██║╚════██║██╔══██║██║   ██║╚═╝\n██║  ██║██║███████║██║  ██║╚██████╔╝██╗\n╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝" },
+  { t: 4900, text: "" },
+  { t: 5000, text: "Welcome to Arch Linux!" },
+];
 const showBackToTop = ref(false);
 const scrollProgress = ref(0);
 const subtitleWrap = ref(null);
@@ -138,6 +199,8 @@ const cursorPos = { x: -100, y: -100 };
 const cursorSmooth = { x: -100, y: -100 };
 const cursorSize = { width: 26, height: 26 };
 let cursorTarget = null;
+let cursorClickScale = 1;
+let cursorClickTarget = 1;
 const cursorListeners = [];
 let loaderWaveLines = [];
 let loaderMouse = {
@@ -423,10 +486,11 @@ function tickCursor() {
 
   cursorSmooth.x += (x - cursorSmooth.x) * 0.28;
   cursorSmooth.y += (y - cursorSmooth.y) * 0.28;
+  cursorClickScale += (cursorClickTarget - cursorClickScale) * 0.3;
 
   if (cursorEl.value) {
     cursorEl.value.style.transform =
-      `translate3d(${cursorSmooth.x}px, ${cursorSmooth.y}px, 0) translate(-50%, -50%)`;
+      `translate3d(${cursorSmooth.x}px, ${cursorSmooth.y}px, 0) translate(-50%, -50%) scale(${cursorClickScale})`;
     cursorEl.value.style.setProperty('--cursor-width', `${cursorSize.width}px`);
     cursorEl.value.style.setProperty('--cursor-height', `${cursorSize.height}px`);
   }
@@ -494,6 +558,15 @@ function setupCursor() {
   document.addEventListener('mouseenter', onWindowEnter);
   cursorListeners.push({ target: document, type: 'mouseleave', fn: onWindowLeave });
   cursorListeners.push({ target: document, type: 'mouseenter', fn: onWindowEnter });
+
+  const onPointerDown = () => { cursorClickTarget = 0.82; };
+  const onPointerUp = () => { cursorClickTarget = 1; };
+  window.addEventListener('pointerdown', onPointerDown, { passive: true });
+  window.addEventListener('pointerup', onPointerUp, { passive: true });
+  window.addEventListener('pointercancel', onPointerUp, { passive: true });
+  cursorListeners.push({ target: window, type: 'pointerdown', fn: onPointerDown });
+  cursorListeners.push({ target: window, type: 'pointerup', fn: onPointerUp });
+  cursorListeners.push({ target: window, type: 'pointercancel', fn: onPointerUp });
 }
 
 function finishLoader() {
@@ -503,6 +576,23 @@ function finishLoader() {
     showLoader.value = false;
     startFrameRecede();
   }, 620);
+}
+
+function scheduleBootLog() {
+  bootLines.value = [];
+  bootTimers.forEach(clearTimeout);
+  bootTimers = [];
+  let maxT = 0;
+  bootLog.forEach((line) => {
+    const id = window.setTimeout(() => {
+      bootLines.value = [...bootLines.value, line.text];
+    }, line.t);
+    bootTimers.push(id);
+    if (line.t > maxT) maxT = line.t;
+  });
+  bootTimers.push(window.setTimeout(() => {
+    finishLoader();
+  }, maxT + 800));
 }
 
 function startFrameRecede() {
@@ -533,6 +623,7 @@ onMounted(async () => {
     setLoaderWaves(waveStart);
     waveFrame = window.requestAnimationFrame(animateLoaderWaves);
     loaderTimer = window.setTimeout(finishLoader, 1900);
+    scheduleBootLog();
   }
 
   lyricTimer = window.setInterval(scrollLyrics, 3000);
@@ -583,16 +674,11 @@ onBeforeUnmount(() => {
         <span></span>
         <span></span>
       </div>
-      <div class="loader-copy">
-        <div class="loader-kicker">HELLO WORLD!</div>
-        <div class="loader-title">RISHU</div>
-        <div class="loader-line">
-          <span>BOOTING PERSONALITY</span>
-          <span>2026</span>
-        </div>
+      <div class="loader-bootlog" aria-live="polite">
+        <pre><template v-for="(line, i) in bootLines" :key="i"><span v-if="line === 'Welcome to Arch Linux!'" class="boot-line is-welcome">Welcome to <strong>Arch Linux</strong>!</span><span v-else-if="line.startsWith('[  OK  ]')" class="boot-line is-ok"><strong>[  OK  ]</strong>{{ line.slice(8) }}</span><span v-else :class="['boot-line', { 'is-ascii': line.includes('█') }]">{{ line }}</span></template></pre>
       </div>
       <div class="loader-progress" aria-hidden="true">
-        <span></span>
+        <span :style="{ transform: `scaleX(${bootLines.length / bootLog.length})` }"></span>
       </div>
     </div>
   </div>
