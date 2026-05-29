@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 import fengCover from '../img/feng.jpg';
 import ftxCover from '../img/ftx.jpg';
@@ -125,7 +125,8 @@ const showLoader = ref(true);
 const loaderLeaving = ref(false);
 const showFrame = ref(true);
 const frameLeaving = ref(false);
-const loaderWavePaths = shallowRef([]);
+const loaderCanvas = ref(null);
+const persistentCanvas = ref(null);
 const bootLines = ref([]);
 let bootTimers = [];
 const bootLog = [
@@ -194,6 +195,7 @@ const subtitleScroll = ref(null);
 const cursorEl = ref(null);
 const currentSongIndex = ref(Math.floor(Math.random() * songs.length));
 const currentLyricIndex = ref(0);
+const waveFrameInterval = 1000 / 60;
 let lyricTimer;
 let waveFrame;
 let waveStart = 0;
@@ -201,6 +203,13 @@ let lastWaveRender = 0;
 let letterFlipTimer;
 let cursorRAF;
 let scrollRAF;
+let waveCtx;
+let persistentWaveCtx;
+let waveWidth = 0;
+let waveHeight = 0;
+let waveDpr = 1;
+let persistentWaveDpr = 1;
+const waveDprCap = 1.25;
 const cursorPos = { x: -100, y: -100 };
 const cursorSmooth = { x: -100, y: -100 };
 const cursorSize = { width: 26, height: 26 };
@@ -268,9 +277,34 @@ function resetLoaderWaves(width, height) {
       x: xStart + xGap * lineIndex,
       y: yStart + yGap * pointIndex,
       wave: { x: 0, y: 0 },
-      cursor: { x: 0, y: 0, vx: 0, vy: 0 }
+      cursor: { x: 0, y: 0, vx: 0, vy: 0 },
+      mx: 0,
+      my: 0
     }))
   ));
+  waveWidth = width;
+  waveHeight = height;
+}
+
+function setupWaveCanvas(canvas, width, height, cachedDpr = 1) {
+  if (!canvas) return null;
+
+  const dpr = Math.min(window.devicePixelRatio || 1, waveDprCap);
+  const targetWidth = Math.ceil(width * dpr);
+  const targetHeight = Math.ceil(height * dpr);
+
+  if (canvas.width !== targetWidth || canvas.height !== targetHeight || cachedDpr !== dpr) {
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    cachedDpr = dpr;
+  }
+
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  return { ctx, dpr: cachedDpr };
 }
 
 function setLoaderWaves(time = performance.now()) {
@@ -281,7 +315,7 @@ function setLoaderWaves(time = performance.now()) {
   const expectedLines = Math.ceil((width + 220) / xGap) + 1;
   const mouse = loaderMouse;
 
-  if (loaderWaveLines.length !== expectedLines) {
+  if (loaderWaveLines.length !== expectedLines || waveWidth !== width || waveHeight !== height) {
     resetLoaderWaves(width, height);
   }
 
@@ -299,8 +333,30 @@ function setLoaderWaves(time = performance.now()) {
   mouse.lx = mouse.x;
   mouse.ly = mouse.y;
 
-  loaderWavePaths.value = loaderWaveLines.map((points, lineIndex) => {
-    const movedPoints = points.map((point) => {
+  if (showLoader.value) {
+    const loaderSetup = setupWaveCanvas(loaderCanvas.value, width, height, waveDpr);
+    waveCtx = loaderSetup?.ctx;
+    waveDpr = loaderSetup?.dpr ?? waveDpr;
+    persistentWaveCtx = null;
+  } else {
+    waveCtx = null;
+    const persistentSetup = setupWaveCanvas(persistentCanvas.value, width, height, persistentWaveDpr);
+    persistentWaveCtx = persistentSetup?.ctx;
+    persistentWaveDpr = persistentSetup?.dpr ?? persistentWaveDpr;
+  }
+
+  if (waveCtx) {
+    waveCtx.clearRect(0, 0, width, height);
+    waveCtx.beginPath();
+  }
+
+  if (persistentWaveCtx) {
+    persistentWaveCtx.clearRect(0, 0, width, height);
+    persistentWaveCtx.beginPath();
+  }
+
+  loaderWaveLines.forEach((points) => {
+    points.forEach((point) => {
       const move =
         valueNoise(
           (point.x + elapsed * 0.0125) * 0.002,
@@ -332,38 +388,52 @@ function setLoaderWaves(time = performance.now()) {
       point.cursor.x = Math.min(100, Math.max(-100, point.cursor.x));
       point.cursor.y = Math.min(100, Math.max(-100, point.cursor.y));
 
-      return {
-        x: Math.round((point.x + point.wave.x + point.cursor.x) * 10) / 10,
-        y: Math.round((point.y + point.wave.y + point.cursor.y) * 10) / 10
-      };
+      point.mx = Math.round((point.x + point.wave.x + point.cursor.x) * 10) / 10;
+      point.my = Math.round((point.y + point.wave.y + point.cursor.y) * 10) / 10;
     });
 
-    let d = `M ${movedPoints[0].x} ${movedPoints[0].y}`;
-
-    for (let pointIndex = 1; pointIndex < movedPoints.length - 1; pointIndex += 1) {
-      const point = movedPoints[pointIndex];
-      const next = movedPoints[pointIndex + 1];
-      const midX = Math.round(((point.x + next.x) / 2) * 10) / 10;
-      const midY = Math.round(((point.y + next.y) / 2) * 10) / 10;
-
-      d += ` Q ${point.x} ${point.y} ${midX} ${midY}`;
-    }
-
-    const last = movedPoints[movedPoints.length - 1];
-    d += ` L ${last.x} ${last.y}`;
-
-    return {
-      d
-    };
+    drawWaveLine(waveCtx, points);
+    drawWaveLine(persistentWaveCtx, points);
   });
+
+  strokeWaveCanvas(waveCtx);
+  strokeWaveCanvas(persistentWaveCtx);
+}
+
+function drawWaveLine(ctx, points) {
+  if (!ctx) return;
+
+  ctx.moveTo(points[0].mx, points[0].my);
+
+  for (let pointIndex = 1; pointIndex < points.length - 1; pointIndex += 1) {
+    const point = points[pointIndex];
+    const next = points[pointIndex + 1];
+    const midX = Math.round(((point.mx + next.mx) / 2) * 10) / 10;
+    const midY = Math.round(((point.my + next.my) / 2) * 10) / 10;
+
+    ctx.quadraticCurveTo(point.mx, point.my, midX, midY);
+  }
+
+  const last = points[points.length - 1];
+  ctx.lineTo(last.mx, last.my);
+}
+
+function strokeWaveCanvas(ctx) {
+  if (!ctx) return;
+
+  ctx.lineWidth = 0.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = isDark.value ? '#ffffff' : '#0a0a0a';
+  ctx.stroke();
 }
 
 function animateLoaderWaves(time) {
-  const minFrameTime = 16;
+  const delta = time - lastWaveRender;
 
-  if (time - lastWaveRender >= minFrameTime) {
+  if (delta >= waveFrameInterval) {
     setLoaderWaves(time);
-    lastWaveRender = time;
+    lastWaveRender = time - (delta % waveFrameInterval);
   }
 
   waveFrame = window.requestAnimationFrame(animateLoaderWaves);
@@ -711,13 +781,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div v-if="showLoader" class="loader-screen" :class="{ 'is-leaving': loaderLeaving }" aria-label="Loading Rishu">
-    <svg class="loader-waves" aria-hidden="true">
-      <path
-        v-for="(path, index) in loaderWavePaths"
-        :key="index"
-        :d="path.d"
-      />
-    </svg>
+    <canvas ref="loaderCanvas" class="loader-waves" aria-hidden="true"></canvas>
     <div class="loader-frame">
       <div class="loader-mark" aria-hidden="true">
         <span></span>
@@ -734,15 +798,10 @@ onBeforeUnmount(() => {
     </div>
   </div>
 
-  <svg
+  <canvas
+    ref="persistentCanvas"
     :class="['loader-waves', 'persistent-waves', { 'is-visible': !showLoader }]"
-    aria-hidden="true">
-    <path
-      v-for="(path, index) in loaderWavePaths"
-      :key="`p-${index}`"
-      :d="path.d"
-    />
-  </svg>
+    aria-hidden="true"></canvas>
 
   <div v-if="showFrame" class="site-frame" :class="{ 'is-leaving': frameLeaving }" aria-hidden="true">
     <span class="site-frame-side site-frame-top"></span>
