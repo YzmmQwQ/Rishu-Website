@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue';
 
 import fengCover from '../img/feng.jpg';
 import ftxCover from '../img/ftx.jpg';
@@ -125,7 +125,7 @@ const showLoader = ref(true);
 const loaderLeaving = ref(false);
 const showFrame = ref(true);
 const frameLeaving = ref(false);
-const loaderWavePaths = ref([]);
+const loaderWavePaths = shallowRef([]);
 const bootLines = ref([]);
 let bootTimers = [];
 const bootLog = [
@@ -197,8 +197,10 @@ const currentLyricIndex = ref(0);
 let lyricTimer;
 let waveFrame;
 let waveStart = 0;
+let lastWaveRender = 0;
 let letterFlipTimer;
 let cursorRAF;
+let scrollRAF;
 const cursorPos = { x: -100, y: -100 };
 const cursorSmooth = { x: -100, y: -100 };
 const cursorSize = { width: 26, height: 26 };
@@ -247,9 +249,15 @@ function valueNoise(x, y) {
   return (x1 + (x2 - x1) * uy) * 2 - 1;
 }
 
+function getWaveGaps(width) {
+  return {
+    xGap: width <= 600 ? 18 : 13,
+    yGap: width <= 600 ? 28 : 22
+  };
+}
+
 function resetLoaderWaves(width, height) {
-  const xGap = width <= 600 ? 18 : 13;
-  const yGap = width <= 600 ? 28 : 22;
+  const { xGap, yGap } = getWaveGaps(width);
   const totalLines = Math.ceil((width + 220) / xGap);
   const totalPoints = Math.ceil((height + 80) / yGap);
   const xStart = (width - totalLines * xGap) / 2;
@@ -269,7 +277,8 @@ function setLoaderWaves(time = performance.now()) {
   const width = window.innerWidth;
   const height = window.innerHeight;
   const elapsed = time - waveStart;
-  const expectedLines = Math.ceil((width + 220) / (width <= 600 ? 16 : 11)) + 1;
+  const { xGap } = getWaveGaps(width);
+  const expectedLines = Math.ceil((width + 220) / xGap) + 1;
   const mouse = loaderMouse;
 
   if (loaderWaveLines.length !== expectedLines) {
@@ -350,7 +359,13 @@ function setLoaderWaves(time = performance.now()) {
 }
 
 function animateLoaderWaves(time) {
-  setLoaderWaves(time);
+  const minFrameTime = 16;
+
+  if (time - lastWaveRender >= minFrameTime) {
+    setLoaderWaves(time);
+    lastWaveRender = time;
+  }
+
   waveFrame = window.requestAnimationFrame(animateLoaderWaves);
 }
 
@@ -407,6 +422,15 @@ function handleScroll() {
   showBackToTop.value = window.scrollY > 300;
   const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
   scrollProgress.value = Math.min(window.scrollY / maxScroll, 1);
+}
+
+function queueHandleScroll() {
+  if (scrollRAF) return;
+
+  scrollRAF = window.requestAnimationFrame(() => {
+    scrollRAF = 0;
+    handleScroll();
+  });
 }
 
 function updateSubtitleHeight() {
@@ -518,43 +542,59 @@ function setupCursor() {
 
   const hoverSelectors =
     'a, button, .info-item, .tag, .link-card, .lang-btn, .theme-toggle, .np-play-btn, .nav-link, .back-to-top';
-  document.querySelectorAll(hoverSelectors).forEach((el) => {
-    const onEnter = () => {
-      cursorTarget = el;
-      cursorEl.value?.classList.add('is-hover');
-    };
-    const onLeave = () => {
-      cursorTarget = null;
-      cursorEl.value?.classList.remove('is-hover');
-    };
-    el.addEventListener('pointerenter', onEnter);
-    el.addEventListener('pointerleave', onLeave);
-    cursorListeners.push({ target: el, type: 'pointerenter', fn: onEnter });
-    cursorListeners.push({ target: el, type: 'pointerleave', fn: onLeave });
-  });
+  const onDocumentOver = (e) => {
+    const target = e.target.closest?.(hoverSelectors);
+
+    if (!target || cursorTarget === target) return;
+
+    cursorTarget = target;
+    cursorEl.value?.classList.add('is-hover');
+  };
+  const onDocumentOut = (e) => {
+    if (!cursorTarget) return;
+    if (e.relatedTarget && cursorTarget.contains(e.relatedTarget)) return;
+
+    cursorTarget = null;
+    cursorEl.value?.classList.remove('is-hover');
+  };
+  document.addEventListener('pointerover', onDocumentOver);
+  document.addEventListener('pointerout', onDocumentOut);
+  cursorListeners.push({ target: document, type: 'pointerover', fn: onDocumentOver });
+  cursorListeners.push({ target: document, type: 'pointerout', fn: onDocumentOut });
 
   const magneticSelectors =
     '.theme-toggle, .lang-btn, .nav-link, .np-play-btn, .back-to-top';
-  document.querySelectorAll(magneticSelectors).forEach((el) => {
+  let magneticTarget = null;
+  let magneticRect = null;
+  const onMagneticMove = (e) => {
+    const el = e.target.closest?.(magneticSelectors);
+
+    if (!el) return;
+
+    if (magneticTarget !== el) {
+      magneticTarget = el;
+      magneticRect = el.getBoundingClientRect();
+    }
+
     el.classList.add('is-magnetic');
+    const x = (e.clientX - magneticRect.left - magneticRect.width / 2) * 0.4;
+    const y = (e.clientY - magneticRect.top - magneticRect.height / 2) * 0.4;
+    el.style.setProperty('--mx', x);
+    el.style.setProperty('--my', y);
+  };
+  const onMagneticOut = (e) => {
+    if (!magneticTarget) return;
+    if (e.relatedTarget && magneticTarget.contains(e.relatedTarget)) return;
 
-    const onMagnetic = (e) => {
-      const rect = el.getBoundingClientRect();
-      const x = (e.clientX - rect.left - rect.width / 2) * 0.4;
-      const y = (e.clientY - rect.top - rect.height / 2) * 0.4;
-      el.style.setProperty('--mx', x);
-      el.style.setProperty('--my', y);
-    };
-    const onReset = () => {
-      el.style.setProperty('--mx', 0);
-      el.style.setProperty('--my', 0);
-    };
-
-    el.addEventListener('pointermove', onMagnetic);
-    el.addEventListener('pointerleave', onReset);
-    cursorListeners.push({ target: el, type: 'pointermove', fn: onMagnetic });
-    cursorListeners.push({ target: el, type: 'pointerleave', fn: onReset });
-  });
+    magneticTarget.style.setProperty('--mx', 0);
+    magneticTarget.style.setProperty('--my', 0);
+    magneticTarget = null;
+    magneticRect = null;
+  };
+  document.addEventListener('pointermove', onMagneticMove);
+  document.addEventListener('pointerout', onMagneticOut);
+  cursorListeners.push({ target: document, type: 'pointermove', fn: onMagneticMove });
+  cursorListeners.push({ target: document, type: 'pointerout', fn: onMagneticOut });
 
   const onWindowLeave = () => cursorEl.value?.classList.add('is-hidden');
   const onWindowEnter = () => cursorEl.value?.classList.remove('is-hidden');
@@ -647,13 +687,14 @@ onMounted(async () => {
 
   document.addEventListener('click', handleDocumentClick);
   window.addEventListener('pointermove', handleLoaderPointerMove, { passive: true });
-  window.addEventListener('scroll', handleScroll);
+  window.addEventListener('scroll', queueHandleScroll, { passive: true });
   window.addEventListener('resize', updateSubtitleHeight);
 });
 
 onBeforeUnmount(() => {
   window.cancelAnimationFrame(waveFrame);
   window.cancelAnimationFrame(cursorRAF);
+  window.cancelAnimationFrame(scrollRAF);
   window.clearInterval(lyricTimer);
   window.clearInterval(letterFlipTimer);
   cursorListeners.forEach(({ target, type, fn }) => {
@@ -663,7 +704,7 @@ onBeforeUnmount(() => {
   document.body.classList.remove('has-custom-cursor');
   document.removeEventListener('click', handleDocumentClick);
   window.removeEventListener('pointermove', handleLoaderPointerMove);
-  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('scroll', queueHandleScroll);
   window.removeEventListener('resize', updateSubtitleHeight);
 });
 </script>
