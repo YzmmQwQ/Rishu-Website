@@ -190,7 +190,6 @@ const cursorEl = ref(null);
 const currentSongIndex = ref(Math.floor(Math.random() * songs.length));
 const currentLyricIndex = ref(0);
 let lyricTimer;
-let loaderTimer;
 let waveFrame;
 let waveStart = 0;
 let letterFlipTimer;
@@ -595,24 +594,6 @@ function scheduleBootLog() {
   }, maxT + 800));
 }
 
-const FIXED_ARCH_KERNEL = {
-  pkgver: '7.0.9',
-  pkgrel: 'arch2-1',
-  build_date: 'Fri, 22 May 2026 19:25:09 +0000',
-};
-
-function applyArchKernel(data) {
-  if (!data || !data.pkgver) return;
-  const ver = `${data.pkgver}-${data.pkgrel}`;
-  let dateStr = '';
-  try {
-    dateStr = new Date(data.build_date).toUTCString().replace(' GMT', ' +0000');
-  } catch {
-    return;
-  }
-  bootLog[0].text = `[    0.000000] Linux version ${ver} (linux@archlinux) (gcc (GCC) 16.1.1, GNU ld (GNU Binutils) 2.46) #1 SMP PREEMPT_DYNAMIC ${dateStr}`;
-}
-
 function startFrameRecede() {
   frameLeaving.value = true;
 
@@ -640,7 +621,6 @@ onMounted(async () => {
     resetLoaderWaves(window.innerWidth, window.innerHeight);
     setLoaderWaves(waveStart);
     waveFrame = window.requestAnimationFrame(animateLoaderWaves);
-    applyArchKernel(FIXED_ARCH_KERNEL);
     scheduleBootLog();
   }
   lyricTimer = window.setInterval(scrollLyrics, 3000);
@@ -658,7 +638,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  window.clearTimeout(loaderTimer);
   window.cancelAnimationFrame(waveFrame);
   window.cancelAnimationFrame(cursorRAF);
   window.clearInterval(lyricTimer);
@@ -886,7 +865,7 @@ onBeforeUnmount(() => {
       <span class="tech-divider-triangle"></span>
       <span class="tech-divider-code" data-alt="MUSIC"><span class="tdc-text">LISTEN</span></span>
       <span class="tech-divider-stripes"></span>
-      <span class="tech-divider-code tech-divider-code-optional" data-alt="GEMINI"><span class="tdc-text">000823</span></span>
+      <span class="tech-divider-code tech-divider-code-optional" data-alt="GEMINI"><span class="tdc-text">090823</span></span>
       <span class="tech-divider-stripes"></span>
       <span class="tech-divider-code" data-alt="WORDS"><span class="tdc-text">QUOTE</span></span>
       <span class="tech-divider-triangle"></span>
