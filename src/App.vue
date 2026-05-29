@@ -595,25 +595,11 @@ function scheduleBootLog() {
   }, maxT + 800));
 }
 
-const ARCH_FETCH_TIMEOUT = 500;
-
-async function fetchArchKernel() {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ARCH_FETCH_TIMEOUT);
-  try {
-    const res = await fetch('https://archlinux.org/packages/core/x86_64/linux/json/', { signal: ctrl.signal });
-    clearTimeout(timer);
-    if (!res.ok) {
-      console.warn('[Rishu] Arch kernel request failed, falling back to bundled loader text.');
-      return null;
-    }
-    return await res.json();
-  } catch {
-    clearTimeout(timer);
-    console.warn('[Rishu] Arch kernel request failed, falling back to bundled loader text.');
-    return null;
-  }
-}
+const FIXED_ARCH_KERNEL = {
+  pkgver: '7.0.9',
+  pkgrel: 'arch2-1',
+  build_date: 'Fri, 22 May 2026 19:25:09 +0000',
+};
 
 function applyArchKernel(data) {
   if (!data || !data.pkgver) return;
@@ -654,7 +640,8 @@ onMounted(async () => {
     resetLoaderWaves(window.innerWidth, window.innerHeight);
     setLoaderWaves(waveStart);
     waveFrame = window.requestAnimationFrame(animateLoaderWaves);
-    fetchArchKernel().then(applyArchKernel).finally(scheduleBootLog);
+    applyArchKernel(FIXED_ARCH_KERNEL);
+    scheduleBootLog();
   }
   lyricTimer = window.setInterval(scrollLyrics, 3000);
 
