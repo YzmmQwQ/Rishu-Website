@@ -125,6 +125,7 @@ const showLoader = ref(true);
 const loaderLeaving = ref(false);
 const showFrame = ref(true);
 const frameLeaving = ref(false);
+const renderWaves = ref(false);
 const loaderCanvas = ref(null);
 const persistentCanvas = ref(null);
 const bootLines = ref([]);
@@ -196,10 +197,12 @@ const cursorEl = ref(null);
 const currentSongIndex = ref(Math.floor(Math.random() * songs.length));
 const currentLyricIndex = ref(0);
 const waveFrameInterval = 1000 / 60;
+const waveRenderBreakpoint = 600;
 let lyricTimer;
 let waveFrame;
 let waveStart = 0;
 let lastWaveRender = 0;
+let reducedMotionEnabled = false;
 let letterFlipTimer;
 let cursorRAF;
 let scrollRAF;
@@ -428,6 +431,33 @@ function strokeWaveCanvas(ctx) {
   ctx.stroke();
 }
 
+function stopWaveRendering() {
+  window.cancelAnimationFrame(waveFrame);
+  waveFrame = 0;
+  waveCtx = null;
+  persistentWaveCtx = null;
+}
+
+async function syncWaveRendering() {
+  const shouldRender = !reducedMotionEnabled && window.innerWidth > waveRenderBreakpoint;
+
+  if (renderWaves.value === shouldRender) return;
+
+  renderWaves.value = shouldRender;
+
+  if (!shouldRender) {
+    stopWaveRendering();
+    return;
+  }
+
+  await nextTick();
+  waveStart = performance.now();
+  lastWaveRender = waveStart;
+  resetLoaderWaves(window.innerWidth, window.innerHeight);
+  setLoaderWaves(waveStart);
+  waveFrame = window.requestAnimationFrame(animateLoaderWaves);
+}
+
 function animateLoaderWaves(time) {
   const delta = time - lastWaveRender;
 
@@ -514,6 +544,11 @@ function updateSubtitleHeight() {
   scroll.style.animation = 'none';
   void scroll.offsetHeight;
   scroll.style.animation = '';
+}
+
+function handleResize() {
+  updateSubtitleHeight();
+  syncWaveRendering();
 }
 
 function scrollLyrics() {
@@ -730,6 +765,7 @@ onMounted(async () => {
   const savedTheme = localStorage.getItem('theme');
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  reducedMotionEnabled = reducedMotion;
 
   isDark.value = savedTheme === 'dark' || (!savedTheme && prefersDark);
   document.documentElement.classList.toggle('dark', isDark.value);
@@ -741,10 +777,7 @@ onMounted(async () => {
   if (reducedMotion) {
     showLoader.value = false;
   } else {
-    waveStart = performance.now();
-    resetLoaderWaves(window.innerWidth, window.innerHeight);
-    setLoaderWaves(waveStart);
-    waveFrame = window.requestAnimationFrame(animateLoaderWaves);
+    await syncWaveRendering();
     scheduleBootLog();
   }
   lyricTimer = window.setInterval(scrollLyrics, 3000);
@@ -758,7 +791,7 @@ onMounted(async () => {
   document.addEventListener('click', handleDocumentClick);
   window.addEventListener('pointermove', handleLoaderPointerMove, { passive: true });
   window.addEventListener('scroll', queueHandleScroll, { passive: true });
-  window.addEventListener('resize', updateSubtitleHeight);
+  window.addEventListener('resize', handleResize);
 });
 
 onBeforeUnmount(() => {
@@ -775,13 +808,13 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleDocumentClick);
   window.removeEventListener('pointermove', handleLoaderPointerMove);
   window.removeEventListener('scroll', queueHandleScroll);
-  window.removeEventListener('resize', updateSubtitleHeight);
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 
 <template>
   <div v-if="showLoader" class="loader-screen" :class="{ 'is-leaving': loaderLeaving }" aria-label="Loading Rishu">
-    <canvas ref="loaderCanvas" class="loader-waves" aria-hidden="true"></canvas>
+    <canvas v-if="renderWaves" ref="loaderCanvas" class="loader-waves" aria-hidden="true"></canvas>
     <div class="loader-frame">
       <div class="loader-mark" aria-hidden="true">
         <span></span>
@@ -799,6 +832,7 @@ onBeforeUnmount(() => {
   </div>
 
   <canvas
+    v-if="renderWaves"
     ref="persistentCanvas"
     :class="['loader-waves', 'persistent-waves', { 'is-visible': !showLoader }]"
     aria-hidden="true"></canvas>
