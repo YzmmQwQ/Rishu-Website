@@ -46,10 +46,15 @@ const subtitleItems = [
 ];
 const titleLetters = "IT'S RISHU.".split('');
 const infoItems = [
-  ['Birthday', '2009.08.23'],
-  ['Height', '183cm'],
-  ['Origin', '🇯🇵 Japan'],
-  ['Grade', 'Senior High']
+  { label: 'Birthday', value: '2009.08.23' },
+  { label: 'Height', value: '183cm' },
+  {
+    label: 'Origin',
+    value: 'Japan',
+    icon: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ef-1f1f5.svg',
+    iconAlt: 'Japan'
+  },
+  { label: 'Grade', value: 'Senior High' }
 ];
 const playingTags = [
   'Minecraft',
@@ -577,17 +582,26 @@ function finishLoader() {
   }, 620);
 }
 
+function getBootLineDelay(line) {
+  const match = line.text.match(/^\[\s*(\d+\.\d+)\]/);
+
+  if (match) return Number.parseFloat(match[1]) * 1000;
+
+  return line.t;
+}
+
 function scheduleBootLog() {
   bootLines.value = [];
   bootTimers.forEach(clearTimeout);
   bootTimers = [];
   let maxT = 0;
   bootLog.forEach((line) => {
+    const delay = getBootLineDelay(line);
     const id = window.setTimeout(() => {
       bootLines.value = [...bootLines.value, line.text];
-    }, line.t);
+    }, delay);
     bootTimers.push(id);
-    if (line.t > maxT) maxT = line.t;
+    if (delay > maxT) maxT = delay;
   });
   bootTimers.push(window.setTimeout(() => {
     finishLoader();
@@ -813,16 +827,25 @@ onBeforeUnmount(() => {
       <span class="tech-divider-triangle"></span>
       <span class="tech-divider-code" data-alt="HELLO"><span class="tdc-text">01010010</span></span>
       <span class="tech-divider-stripes"></span>
-      <span class="tech-divider-code tech-divider-code-optional" data-alt="2009.08.23"><span class="tdc-text">RISHU</span></span>
+      <span class="tech-divider-code tech-divider-code-optional" data-alt="EST09"><span class="tdc-text">RISHU</span></span>
       <span class="tech-divider-stripes"></span>
       <span class="tech-divider-code" data-alt="WORLD"><span class="tdc-text">11001001</span></span>
       <span class="tech-divider-triangle"></span>
     </div>
 
     <div class="info-grid reveal-block">
-      <div v-for="[label, value] in infoItems" :key="label" class="info-item">
-        <div class="label">{{ label }}</div>
-        <div class="value">{{ value }}</div>
+      <div v-for="item in infoItems" :key="item.label" class="info-item">
+        <div class="label">{{ item.label }}</div>
+        <div class="value">
+          <img
+            v-if="item.icon"
+            class="twemoji-flag"
+            :src="item.icon"
+            :alt="item.iconAlt"
+            loading="lazy"
+          >
+          <span>{{ item.value }}</span>
+        </div>
       </div>
     </div>
 
