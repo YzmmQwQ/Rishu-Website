@@ -203,6 +203,7 @@ let waveFrame;
 let waveStart = 0;
 let lastWaveRender = 0;
 let reducedMotionEnabled = false;
+let loaderFinished = false;
 let letterFlipTimer;
 let cursorRAF;
 let scrollRAF;
@@ -719,12 +720,28 @@ function setupCursor() {
 }
 
 function finishLoader() {
+  if (loaderFinished) return;
+
+  loaderFinished = true;
   loaderLeaving.value = true;
 
   window.setTimeout(() => {
     showLoader.value = false;
     startFrameRecede();
   }, 620);
+}
+
+function clearBootTimers() {
+  bootTimers.forEach(clearTimeout);
+  bootTimers = [];
+}
+
+function skipLoader() {
+  if (loaderFinished || !showLoader.value) return;
+
+  clearBootTimers();
+  console.log('%c[RISHU] boot skipped by user input', 'color:#707070;font-weight:700;');
+  finishLoader();
 }
 
 function getBootLineDelay(line) {
@@ -756,8 +773,7 @@ function logBootLine(line) {
 
 function scheduleBootLog() {
   bootLines.value = [];
-  bootTimers.forEach(clearTimeout);
-  bootTimers = [];
+  clearBootTimers();
   let maxT = 0;
   bootLog.forEach((line) => {
     const delay = getBootLineDelay(line);
@@ -833,7 +849,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="showLoader" class="loader-screen" :class="{ 'is-leaving': loaderLeaving }" aria-label="Loading Rishu">
+  <div
+    v-if="showLoader"
+    class="loader-screen"
+    :class="{ 'is-leaving': loaderLeaving }"
+    aria-label="Loading Rishu"
+    @click="skipLoader"
+  >
     <canvas v-if="renderWaves" ref="loaderCanvas" class="loader-waves" aria-hidden="true"></canvas>
     <div class="loader-frame">
       <div class="loader-mark" aria-hidden="true">
