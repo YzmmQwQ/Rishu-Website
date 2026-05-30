@@ -735,6 +735,25 @@ function getBootLineDelay(line) {
   return line.t;
 }
 
+function logBootLine(line) {
+  if (!line) {
+    console.log('');
+    return;
+  }
+
+  if (line.startsWith('[  OK  ]')) {
+    console.log('%c[  OK  ]%c%s', 'color:#00a670;font-weight:700;', 'color:inherit;', line.slice(8));
+    return;
+  }
+
+  if (line === 'Welcome to Arch Linux!') {
+    console.log('%cWelcome to Arch Linux!', 'font-weight:700;');
+    return;
+  }
+
+  console.log(line);
+}
+
 function scheduleBootLog() {
   bootLines.value = [];
   bootTimers.forEach(clearTimeout);
@@ -744,6 +763,7 @@ function scheduleBootLog() {
     const delay = getBootLineDelay(line);
     const id = window.setTimeout(() => {
       bootLines.value = [...bootLines.value, line.text];
+      logBootLine(line.text);
     }, delay);
     bootTimers.push(id);
     if (delay > maxT) maxT = delay;
