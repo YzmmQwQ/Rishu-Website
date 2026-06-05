@@ -125,6 +125,7 @@ const showLoader = ref(true);
 const loaderLeaving = ref(false);
 const showFrame = ref(true);
 const frameLeaving = ref(false);
+let revealObserver;
 const renderWaves = ref(false);
 const loaderCanvas = ref(null);
 const persistentCanvas = ref(null);
@@ -728,7 +729,29 @@ function finishLoader() {
   window.setTimeout(() => {
     showLoader.value = false;
     startFrameRecede();
+    nextTick(setupReveal);
   }, 620);
+}
+
+function setupReveal() {
+  const blocks = Array.from(document.querySelectorAll('.reveal-block'));
+  if (!blocks.length) return;
+  if (!('IntersectionObserver' in window)) {
+    blocks.forEach((b) => b.classList.add('is-visible'));
+    return;
+  }
+  revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+  );
+  blocks.forEach((b) => revealObserver.observe(b));
 }
 
 function clearBootTimers() {
@@ -812,6 +835,7 @@ onMounted(async () => {
 
   if (reducedMotion) {
     showLoader.value = false;
+    nextTick(setupReveal);
   } else {
     await syncWaveRendering();
     scheduleBootLog();
@@ -836,6 +860,7 @@ onBeforeUnmount(() => {
   window.cancelAnimationFrame(scrollRAF);
   window.clearInterval(lyricTimer);
   window.clearInterval(letterFlipTimer);
+  revealObserver?.disconnect();
   cursorListeners.forEach(({ target, type, fn }) => {
     target.removeEventListener(type, fn);
   });
@@ -957,9 +982,9 @@ onBeforeUnmount(() => {
       </div>
     </nav>
 
-    <div class="section-label">ABOUT MYSELF</div>
+    <div class="section-label reveal-block">ABOUT MYSELF</div>
 
-    <div class="header">
+    <div class="header reveal-block">
       <div class="hero-grid" aria-hidden="true">
         <span></span>
         <span></span>

@@ -81,6 +81,9 @@
 body {
     font-family: 'IBM Plex Sans', 'MiSans', system-ui, -apple-system, sans-serif;
     font-weight: 400;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     background: var(--bg);
     color: var(--fg);
     min-height: 100vh;
@@ -95,6 +98,13 @@ html {
 
 body {
     -ms-overflow-style: none;
+}
+
+pre,
+code,
+kbd,
+.loader-bootlog pre {
+    font-feature-settings: 'liga' 0, 'calt' 0;
 }
 
 html::-webkit-scrollbar,
@@ -348,33 +358,6 @@ a {
     animation-delay: 0.36s;
 }
 
-.loader-copy {
-    padding: 20px;
-}
-
-.loader-kicker,
-.loader-line {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    font-size: 11px;
-    line-height: 17px;
-    font-weight: 600;
-    color: var(--fg-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-}
-
-.loader-title {
-    margin: 10px 0 12px;
-    font-size: clamp(3rem, 18vw, 7rem);
-    line-height: 0.82;
-    font-weight: 700;
-    color: var(--fg);
-    text-transform: uppercase;
-}
-
 .loader-progress {
     height: 10px;
     background: var(--fill);
@@ -496,11 +479,6 @@ a {
     to { transform: scaleY(1); }
 }
 
-@keyframes loaderProgress {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .loader-screen,
     .site-frame-side,
@@ -510,6 +488,11 @@ a {
     .title-letter,
     .reveal-block {
         animation: none !important;
+    }
+    .reveal-block {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
 }
 
@@ -899,37 +882,16 @@ a {
 }
 
 .reveal-block {
-    animation: revealBlock 0.75s cubic-bezier(0.8, 0, 0.2, 1) both;
-    animation-delay: 0.18s;
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+        opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.info-grid.reveal-block {
-    animation-delay: 0.26s;
-}
-
-.tags-row.reveal-block {
-    animation-delay: 0.34s;
-}
-
-.quote.reveal-block {
-    animation-delay: 0.42s;
-}
-
-.links-section.reveal-block {
-    animation-delay: 0.5s;
-}
-
-@keyframes revealBlock {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-        clip-path: inset(0 0 100% 0);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-        clip-path: inset(0 0 0 0);
-    }
+.reveal-block.is-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* Divider */
