@@ -1112,13 +1112,6 @@ onBeforeUnmount(() => {
               :alt="ic.alt"
               loading="lazy"
             >
-            <img
-              v-if="item.icon"
-              class="twemoji-flag"
-              :src="item.icon"
-              :alt="item.iconAlt"
-              loading="lazy"
-            >
             <span>{{ item.value }}</span>
           </template>
         </div>

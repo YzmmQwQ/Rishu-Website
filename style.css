@@ -1325,6 +1325,17 @@ a {
     text-decoration: none;
 }
 
+.footer a:not(.icp-link) {
+    color: var(--fg);
+    border-bottom: 1px solid var(--stroke);
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.footer a:not(.icp-link):hover {
+    color: var(--accent-main-highlight);
+    border-bottom-color: var(--accent-main-highlight);
+}
+
 .footer-divider {
     margin: 0 12px;
     color: var(--stroke);
