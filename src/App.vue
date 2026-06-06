@@ -11,7 +11,7 @@ import yhmCover from '../img/yhm.jpg';
 const translations = {
   zh: {
     langHint: '蛤？还有多语言呐？',
-    bio: '没有什么特别的吧？别问太多，懒。',
+    bio: '「大叔我想退休。」',
     quote: '自由，热爱。',
     emailTitle: '来封 Email？',
     qqTitle: '加我 QQ？',
@@ -19,7 +19,7 @@ const translations = {
   },
   en: {
     langHint: 'Huh? Multiple languages?',
-    bio: "Nothing special. Don't ask too much. Lazy.",
+    bio: 'An ordinary gamer.',
     quote: 'Freedom, passion.',
     emailTitle: 'Send me an Email?',
     qqTitle: 'Add me on QQ?',
@@ -27,7 +27,7 @@ const translations = {
   },
   ja: {
     langHint: 'え？多言語対応なの？',
-    bio: '特別なことなんてないよ。聞きすぎないで。面倒くさい。',
+    bio: '高校生、眠い。',
     quote: '自由、情熱。',
     emailTitle: 'メールを送る？',
     qqTitle: 'QQで連絡する？',
