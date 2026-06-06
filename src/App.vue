@@ -37,12 +37,12 @@ const translations = {
 
 const langNames = { zh: '中文', en: 'ENGLISH', ja: '日本語' };
 const subtitleItems = [
-  '16 YEARS OLD',
-  '23/08/2009',
-  'BEE MYSELF',
-  'GEMINI 2.5 PRO',
-  'LOVE U FOREVER',
-  'SIMPLE STUDENT'
+  'I USE ARCH BTW',
+  'BORN 23.08.2009',
+  'GEMINI BY BIRTH',
+  'COMPILING DREAM',
+  'KERNEL PANIC :)',
+  'LOCALHOST/RISHU'
 ];
 const titleLetters = "IT'S RISHU.".split('');
 const infoItems = [
