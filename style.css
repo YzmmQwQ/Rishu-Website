@@ -545,8 +545,14 @@ a {
     letter-spacing: 0.02em;
 }
 
-.site-title a {
+.site-title button {
+    font: inherit;
     color: var(--fg);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    letter-spacing: inherit;
 }
 
 /* Section label - E2B style */
@@ -1045,6 +1051,12 @@ a {
     display: inline-block;
 }
 
+.value-sep {
+    color: var(--fg-tertiary);
+    font-weight: 400;
+    margin-left: -1px;
+}
+
 /* Tags Row */
 .tags-row {
     display: grid;
@@ -1334,7 +1346,8 @@ code {
 }
 
 /* Back to Top Button */
-.back-to-top {
+/* Floating terminal FAB + visitor card */
+.term-fab {
     position: fixed;
     bottom: 24px;
     right: 24px;
@@ -1346,26 +1359,113 @@ code {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s, visibility 0.2s, background 0.15s, border-color 0.15s;
-    z-index: 99;
+    transition: background 0.15s, border-color 0.15s;
+    z-index: 100;
 }
 
-.back-to-top.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.back-to-top:hover {
+.term-fab:hover {
     background: var(--bg-hover);
     border-color: var(--stroke-active);
 }
 
-.back-to-top svg {
+.term-fab svg {
     width: 20px;
     height: 20px;
     stroke: var(--fg-tertiary);
+    transition: stroke 0.15s;
+}
+
+.term-fab:hover svg,
+.term-fab.is-open svg {
+    stroke: var(--fg);
+}
+
+.visitor-card {
+    position: fixed;
+    bottom: 84px;
+    right: 24px;
+    width: 280px;
+    background: var(--bg);
+    border: 1px solid var(--stroke);
+    z-index: 100;
+    font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+
+.vc-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--stroke);
+}
+
+.vc-title {
+    flex: 1;
+    font-size: 11px;
+    color: var(--fg-tertiary);
+}
+
+.vc-close {
+    display: flex;
+    padding: 2px;
+    background: none;
+    border: none;
+    color: var(--fg-tertiary);
+    cursor: pointer;
+}
+
+.vc-close svg {
+    width: 14px;
+    height: 14px;
+}
+
+.vc-close:hover {
+    color: var(--fg);
+}
+
+.vc-body {
+    margin: 0;
+    padding: 14px;
+    font-size: 11px;
+    line-height: 18px;
+    color: var(--fg-tertiary);
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.vc-body b {
+    color: var(--fg);
+    font-weight: 600;
+}
+
+.vc-prompt {
+    color: var(--accent-main-highlight);
+}
+
+.vc-ok {
+    color: var(--accent-positive-highlight);
+    font-weight: 600;
+}
+
+.vc-credit {
+    padding: 8px 14px;
+    border-top: 1px solid var(--stroke);
+    font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+    font-size: 10px;
+    color: var(--fg-tertiary);
+}
+
+.vc-credit a {
+    color: var(--fg);
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid var(--stroke);
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.vc-credit a:hover {
+    color: var(--accent-main-highlight);
+    border-bottom-color: var(--accent-main-highlight);
 }
 
 /* Nav Right */

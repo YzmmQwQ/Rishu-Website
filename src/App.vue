@@ -38,23 +38,55 @@ const translations = {
 const langNames = { zh: '中文', en: 'ENGLISH', ja: '日本語' };
 const subtitleItems = [
   'I USE ARCH BTW',
-  'BORN 23.08.2009',
-  'GEMINI BY BIRTH',
-  'COMPILING DREAM',
+  'SUDO MAKE CAFÉ',
+  'SEGFAULT AT 0X0',
+  'CTRL S OR DEATH',
   'KERNEL PANIC :)',
-  'LOCALHOST/RISHU'
+  'TABS NOT SPACES'
 ];
 const titleLetters = "IT'S RISHU.".split('');
 const infoItems = [
-  { label: 'Birthday', value: '2009.08.23' },
-  { label: 'Height', value: '183cm' },
   {
-    label: 'Origin',
-    value: 'Japan',
-    icon: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ef-1f1f5.svg',
-    iconAlt: 'Japan'
+    label: 'Birthday',
+    value: '23/08/2009',
+    icons: [
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f382.svg', alt: 'Birthday cake' },
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f973.svg', alt: 'Partying face' }
+    ]
   },
-  { label: 'Grade', value: 'Senior High' }
+  {
+    label: 'MBTI',
+    value: 'ISTP',
+    icons: [
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6e0.svg', alt: 'Hammer and wrench' },
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f92b.svg', alt: 'Shushing face' },
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f6f5.svg', alt: 'Motor scooter' }
+    ]
+  },
+  {
+    label: 'Locations',
+    parts: [
+      {
+        icon: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ef-1f1f5.svg',
+        alt: 'Japan',
+        text: 'Japan'
+      },
+      {
+        icon: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f1ed-1f1f0.svg',
+        alt: 'Hong Kong',
+        text: 'Hong Kong'
+      }
+    ]
+  },
+  {
+    label: 'Academic',
+    value: 'Senior High',
+    icons: [
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f3eb.svg', alt: 'School' },
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1f4dd.svg', alt: 'Memo' },
+      { src: 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/1fae0.svg', alt: 'Melting face' }
+    ]
+  }
 ];
 const playingTags = [
   'Minecraft',
@@ -190,8 +222,8 @@ const bootLog = [
   { t: 4900, text: "" },
   { t: 5000, text: "Welcome to Arch Linux!" },
 ];
-const showBackToTop = ref(false);
 const scrollProgress = ref(0);
+const showVisitorCard = ref(false);
 const subtitleWrap = ref(null);
 const subtitleScroll = ref(null);
 const cursorEl = ref(null);
@@ -510,6 +542,19 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function toggleVisitorCard() {
+  showVisitorCard.value = !showVisitorCard.value;
+}
+
+function loadVisitorStats() {
+  if (document.getElementById('vercount-script')) return;
+  const s = document.createElement('script');
+  s.id = 'vercount-script';
+  s.defer = true;
+  s.src = 'https://events.vercount.one/js';
+  document.body.appendChild(s);
+}
+
 function openPlaylist() {
   window.open('https://docs.rishu.cfd/learn-more/playlist', '_blank');
 }
@@ -521,7 +566,6 @@ function handleDocumentClick(event) {
 }
 
 function handleScroll() {
-  showBackToTop.value = window.scrollY > 300;
   const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
   scrollProgress.value = Math.min(window.scrollY / maxScroll, 1);
 }
@@ -605,16 +649,28 @@ function tickCursor() {
   let x = cursorPos.x;
   let y = cursorPos.y;
 
+  if (cursorTarget && !cursorTarget.isConnected) {
+    cursorTarget = null;
+    cursorEl.value?.classList.remove('is-hover');
+  }
+
   if (cursorTarget) {
     const rect = cursorTarget.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    if (rect.width === 0 && rect.height === 0) {
+      cursorTarget = null;
+      cursorEl.value?.classList.remove('is-hover');
+    } else {
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
 
-    x = centerX + (x - centerX) * 0.12;
-    y = centerY + (y - centerY) * 0.12;
-    cursorSize.width = rect.width + 20;
-    cursorSize.height = rect.height + 20;
-  } else {
+      x = centerX + (x - centerX) * 0.12;
+      y = centerY + (y - centerY) * 0.12;
+      cursorSize.width = rect.width + 20;
+      cursorSize.height = rect.height + 20;
+    }
+  }
+
+  if (!cursorTarget) {
     cursorSize.width += (26 - cursorSize.width) * 0.2;
     cursorSize.height += (26 - cursorSize.height) * 0.2;
   }
@@ -648,7 +704,7 @@ function setupCursor() {
   cursorRAF = window.requestAnimationFrame(tickCursor);
 
   const hoverSelectors =
-    'a, button, .info-item, .tag, .link-card, .lang-btn, .theme-toggle, .np-play-btn, .nav-link, .back-to-top';
+    'a, button, .info-item, .tag, .link-card, .lang-btn, .theme-toggle, .np-play-btn, .nav-link';
   const onDocumentOver = (e) => {
     const target = e.target.closest?.(hoverSelectors);
 
@@ -670,7 +726,7 @@ function setupCursor() {
   cursorListeners.push({ target: document, type: 'pointerout', fn: onDocumentOut });
 
   const magneticSelectors =
-    '.theme-toggle, .lang-btn, .nav-link, .np-play-btn, .back-to-top';
+    '.theme-toggle, .lang-btn, .nav-link, .np-play-btn';
   let magneticTarget = null;
   let magneticRect = null;
   const onMagneticMove = (e) => {
@@ -848,6 +904,8 @@ onMounted(async () => {
 
   setupCursor();
 
+  loadVisitorStats();
+
   document.addEventListener('click', handleDocumentClick);
   window.addEventListener('pointermove', handleLoaderPointerMove, { passive: true });
   window.addEventListener('scroll', queueHandleScroll, { passive: true });
@@ -920,7 +978,7 @@ onBeforeUnmount(() => {
   <div class="container">
     <nav class="top-bar">
       <div class="site-title">
-        <a href="https://rishu.cfd">RISHU.CFD</a>
+        <button type="button" @click="scrollToTop">RISHU.CFD</button>
       </div>
       <div class="nav-right">
         <a href="https://travel.moe/go.html" class="nav-link travel-link" title="异次元之旅-跃迁-我们一起去萌站成员的星球旅行吧！" target="_blank">
@@ -1038,14 +1096,31 @@ onBeforeUnmount(() => {
       <div v-for="item in infoItems" :key="item.label" class="info-item">
         <div class="label">{{ item.label }}</div>
         <div class="value">
-          <img
-            v-if="item.icon"
-            class="twemoji-flag"
-            :src="item.icon"
-            :alt="item.iconAlt"
-            loading="lazy"
-          >
-          <span>{{ item.value }}</span>
+          <template v-if="item.parts">
+            <template v-for="(part, pi) in item.parts" :key="part.text">
+              <span v-if="pi > 0" class="value-sep">&amp;</span>
+              <img class="twemoji-flag" :src="part.icon" :alt="part.alt" loading="lazy">
+              <span>{{ part.text }}</span>
+            </template>
+          </template>
+          <template v-else>
+            <img
+              v-for="ic in item.icons"
+              :key="ic.src"
+              class="twemoji-flag"
+              :src="ic.src"
+              :alt="ic.alt"
+              loading="lazy"
+            >
+            <img
+              v-if="item.icon"
+              class="twemoji-flag"
+              :src="item.icon"
+              :alt="item.iconAlt"
+              loading="lazy"
+            >
+            <span>{{ item.value }}</span>
+          </template>
         </div>
       </div>
     </div>
@@ -1087,9 +1162,9 @@ onBeforeUnmount(() => {
 
     <div class="divider tech-divider" aria-hidden="true">
       <span class="tech-divider-triangle"></span>
-      <span class="tech-divider-code" data-alt="MUSIC"><span class="tdc-text">LISTEN</span></span>
+      <span class="tech-divider-code" data-alt="MUSIC"><span class="tdc-text">CATCH</span></span>
       <span class="tech-divider-stripes"></span>
-      <span class="tech-divider-code tech-divider-code-optional" data-alt="GEMINI"><span class="tdc-text">090823</span></span>
+      <span class="tech-divider-code tech-divider-code-optional" data-alt="GEMINI"><span class="tdc-text">HIFROM</span></span>
       <span class="tech-divider-stripes"></span>
       <span class="tech-divider-code" data-alt="WORDS"><span class="tdc-text">QUOTE</span></span>
       <span class="tech-divider-triangle"></span>
@@ -1133,9 +1208,34 @@ onBeforeUnmount(() => {
     </div>
   </div>
 
-  <button class="back-to-top" :class="{ show: showBackToTop }" type="button" aria-label="Back to top" @click="scrollToTop">
+  <div class="visitor-card" v-show="showVisitorCard" role="dialog" aria-label="Visitor stats">
+    <div class="vc-header">
+      <span class="vc-title">visitor@rishu.cfd</span>
+      <button class="vc-close" type="button" aria-label="Close" @click="showVisitorCard = false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <pre class="vc-body"><span class="vc-prompt">$</span> who --count
+total views    <b id="vercount_value_site_pv">--</b>
+unique guests  <b id="vercount_value_site_uv">--</b>
+this page      <b id="vercount_value_page_pv">--</b>
+<span class="vc-ok">[  OK  ]</span> you're online</pre>
+    <div class="vc-credit">Powered by <a href="https://www.vercount.one/" target="_blank" rel="noopener">Vercount</a></div>
+  </div>
+
+  <button
+    class="term-fab"
+    :class="{ 'is-open': showVisitorCard }"
+    type="button"
+    aria-label="Visitor terminal"
+    @click="toggleVisitorCard"
+  >
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="18 15 12 9 6 15"></polyline>
+      <polyline points="4 17 10 11 4 5"></polyline>
+      <line x1="12" y1="19" x2="20" y2="19"></line>
     </svg>
   </button>
 
