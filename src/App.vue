@@ -224,6 +224,10 @@ const bootLog = [
 ];
 const scrollProgress = ref(0);
 const showVisitorCard = ref(false);
+const geo = ref({ ip: '…', location: '…', isp: '…' });
+const privacy = ref({ webrtc: '…', localip: '…', vpn: '…' });
+let geoLoaded = false;
+let apiTimezone = '';
 const subtitleWrap = ref(null);
 const subtitleScroll = ref(null);
 const cursorEl = ref(null);
@@ -544,6 +548,107 @@ function scrollToTop() {
 
 function toggleVisitorCard() {
   showVisitorCard.value = !showVisitorCard.value;
+  if (showVisitorCard.value && !geoLoaded) {
+    geoLoaded = true;
+    loadVisitorInfo();
+  }
+}
+
+async function loadVisitorInfo() {
+  await loadGeo();
+  const rtc = await detectWebRTC();
+
+  privacy.value.webrtc = rtc.public || 'hidden';
+  privacy.value.localip = rtc.local || 'hidden (mDNS)';
+
+  const browserTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const httpIp = geo.value.ip;
+  const hasHttpIp = httpIp && httpIp !== 'unavailable';
+  const reasons = [];
+  if (rtc.public && hasHttpIp && rtc.public !== httpIp) reasons.push('webrtc≠http');
+  if (apiTimezone && browserTZ && apiTimezone !== browserTZ) reasons.push('tz mismatch');
+
+  if (!hasHttpIp && !rtc.public) privacy.value.vpn = 'unknown';
+  else privacy.value.vpn = reasons.length ? `likely (${reasons.join(', ')})` : 'not detected';
+}
+
+async function loadGeo() {
+  // 首次打开访客卡片时查询访客自己的 IP 归属地（英文输出），ipwho.is 主、ipapi.co 兜底
+  try {
+    const res = await fetch('https://ipwho.is/');
+    const d = await res.json();
+    if (d && d.success !== false && d.ip) {
+      geo.value = {
+        ip: d.ip,
+        location: [d.city, d.region, d.country_code].filter(Boolean).join(', ') || '—',
+        isp: d.connection?.isp || d.connection?.org || '—'
+      };
+      apiTimezone = d.timezone?.id || '';
+      return;
+    }
+  } catch (e) { /* fall through */ }
+
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const d = await res.json();
+    if (d && d.ip) {
+      geo.value = {
+        ip: d.ip,
+        location: [d.city, d.region, d.country_code].filter(Boolean).join(', ') || '—',
+        isp: (d.org || '').replace(/^AS\d+\s*/, '') || '—'
+      };
+      apiTimezone = d.timezone || '';
+      return;
+    }
+  } catch (e) { /* fall through */ }
+
+  geo.value = { ip: 'unavailable', location: '—', isp: '—' };
+}
+
+// WebRTC 探测访客的公网/本地 IP（用于自检 VPN/泄漏，结果仅展示给访客本人）
+function detectWebRTC() {
+  return new Promise((resolve) => {
+    const result = { public: '', local: '' };
+    let pc;
+    try {
+      pc = new RTCPeerConnection({
+        iceServers: [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun.miwifi.com'] }]
+      });
+    } catch (e) {
+      resolve(result);
+      return;
+    }
+
+    const ipv4 = /\b\d{1,3}(?:\.\d{1,3}){3}\b/;
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      try { pc.close(); } catch (e) { /* noop */ }
+      resolve(result);
+    };
+
+    pc.onicecandidate = (e) => {
+      if (!e.candidate || !e.candidate.candidate) { finish(); return; }
+      const cand = e.candidate.candidate;
+      const m = cand.match(ipv4);
+      if (!m) return; // mDNS .local 或 IPv6，跳过
+      const ip = m[0];
+      const isPrivate = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|127\.)/.test(ip);
+      const typ = / typ (\w+)/.exec(cand)?.[1];
+      if (!isPrivate && (typ === 'srflx' || !result.public)) result.public = ip;
+      else if (isPrivate && !result.local) result.local = ip;
+    };
+
+    try {
+      pc.createDataChannel('');
+      pc.createOffer().then((o) => pc.setLocalDescription(o)).catch(finish);
+    } catch (e) {
+      finish();
+      return;
+    }
+    setTimeout(finish, 1500);
+  });
 }
 
 function loadVisitorStats() {
@@ -1215,6 +1320,14 @@ onBeforeUnmount(() => {
 total views    <b id="vercount_value_site_pv">--</b>
 unique guests  <b id="vercount_value_site_uv">--</b>
 this page      <b id="vercount_value_page_pv">--</b>
+<span class="vc-prompt">$</span> whoami --geo
+ip address     <b>{{ geo.ip }}</b>
+location       <b>{{ geo.location }}</b>
+isp            <b>{{ geo.isp }}</b>
+<span class="vc-prompt">$</span> check --privacy
+webrtc ip      <b>{{ privacy.webrtc }}</b>
+local ip       <b>{{ privacy.localip }}</b>
+vpn?           <b>{{ privacy.vpn }}</b>
 <span class="vc-ok">[  OK  ]</span> you're online</pre>
     <div class="vc-credit">Powered by <a href="https://www.vercount.one/" target="_blank" rel="noopener">Vercount</a></div>
   </div>
