@@ -486,7 +486,8 @@ a {
     .loader-mark span,
     .loader-progress span,
     .title-letter,
-    .reveal-block {
+    .reveal-block,
+    .timeline-item.is-latest .timeline-node {
         animation: none !important;
     }
     .reveal-block {
@@ -1015,7 +1016,7 @@ a {
 /* Tags Row */
 .tags-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 24px;
     margin-bottom: 24px;
 }
@@ -1194,6 +1195,109 @@ a {
 
 .quote::before { top: 4px; left: 12px; }
 .quote::after { bottom: -16px; right: 12px; }
+
+/* Timeline */
+.timeline {
+    margin-bottom: 32px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 28px;
+    padding-bottom: 20px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 6px;
+    bottom: -2px;
+    width: 1px;
+    background: var(--stroke);
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-item:last-child::before {
+    display: none;
+}
+
+.timeline-node {
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 9px;
+    height: 9px;
+    background: #EBEBEB;
+    z-index: 1;
+}
+
+.timeline-item.is-latest .timeline-node {
+    background: var(--accent-main-highlight);
+    animation: pulse 2s infinite;
+}
+
+.timeline-date {
+    font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+    font-size: 12px;
+    line-height: 17px;
+    color: var(--fg-tertiary);
+}
+
+.timeline-title {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    color: var(--fg);
+    margin-top: 2px;
+}
+
+.timeline-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg-tertiary);
+    margin-top: 2px;
+}
+
+/* Timeline goes horizontal on wide screens (where waves render, >600px);
+   stays vertical on small screens (waves off). */
+@media (min-width: 601px) {
+    .timeline {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .timeline-item {
+        flex: 1;
+        padding-left: 0;
+        padding-right: 16px;
+        padding-top: 22px;
+        padding-bottom: 0;
+    }
+
+    .timeline-item::before {
+        top: 4px;
+        left: 4px;
+        bottom: auto;
+        width: 100%;
+        height: 1px;
+    }
+
+    .timeline-item:last-child {
+        padding-right: 0;
+    }
+
+    .timeline-item:last-child::before {
+        display: none;
+    }
+
+    .timeline-node {
+        top: 0;
+    }
+}
 
 /* Links Section */
 .links-section {

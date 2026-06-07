@@ -12,7 +12,7 @@ const translations = {
   zh: {
     langHint: '蛤？还有多语言呐？',
     bio: '「大叔我想退休。」',
-    quote: '自由，热爱。',
+    quote: '散漫是生活的解药，除此以外都无所谓。',
     emailTitle: '来封 Email？',
     qqTitle: '加我 QQ？',
     travel: '异次元之旅'
@@ -20,7 +20,7 @@ const translations = {
   en: {
     langHint: 'Huh? Multiple languages?',
     bio: 'An ordinary gamer.',
-    quote: 'Freedom, passion.',
+    quote: 'Vagrant is the antidote to life, nothing else matters.',
     emailTitle: 'Send me an Email?',
     qqTitle: 'Add me on QQ?',
     travel: 'Interdimensional Journey'
@@ -28,7 +28,7 @@ const translations = {
   ja: {
     langHint: 'え？多言語対応なの？',
     bio: '高校生、眠い。',
-    quote: '自由、情熱。',
+    quote: '散漫は人生の解毒剤であり、それ以外はどうでもいい。',
     emailTitle: 'メールを送る？',
     qqTitle: 'QQで連絡する？',
     travel: '異次元の旅'
@@ -99,6 +99,33 @@ const playingTags = [
   'Project Sekai'
 ];
 const listeningTags = ['Jay Chou', 'Hatsune Miku'];
+const timeline = [
+  {
+    date: '2026',
+    title: { zh: '个人主页！', en: 'Personal site!', ja: '個人サイト！' },
+    desc: { zh: 'RISHU.cfd', en: 'RISHU.cfd', ja: 'RISHU.cfd' }
+  },
+  {
+    date: '2025',
+    title: { zh: '升入高中', en: 'Started high school', ja: '高校入学' },
+    desc: { zh: '睡眠不足', en: 'Sleep deprived', ja: '睡眠不足' }
+  },
+  {
+    date: '2024',
+    title: { zh: '入坑 Arch', en: 'Switched to Arch', ja: 'Arch に乗り換え' },
+    desc: { zh: 'i use arch btw', en: 'i use arch btw', ja: 'i use arch btw' }
+  },
+  {
+    date: '2020',
+    title: { zh: '入坑 Minecraft', en: 'Got into Minecraft', ja: 'Minecraft に入門' },
+    desc: { zh: '开始折腾电脑与开服', en: 'Tinkering with PCs & servers', ja: 'PC とサーバーいじり開始' }
+  },
+  {
+    date: '2009.08',
+    title: { zh: '出厂', en: 'Manufactured', ja: '出荷' },
+    desc: { zh: '固件 v0.0.1', en: 'Firmware v0.0.1', ja: 'ファームウェア v0.0.1' }
+  }
+];
 const songs = [
   {
     title: '擱淺',
@@ -1193,6 +1220,21 @@ onBeforeUnmount(() => {
     </div>
 
     <div class="quote reveal-block">{{ text.quote }}</div>
+
+    <div class="section-label reveal-block">TIMELINE</div>
+    <div class="timeline reveal-block">
+      <div
+        v-for="(item, i) in timeline"
+        :key="item.date + item.title.zh"
+        class="timeline-item"
+        :class="{ 'is-latest': i === 0 }"
+      >
+        <span class="timeline-node" aria-hidden="true"></span>
+        <div class="timeline-date">{{ item.date }}</div>
+        <div class="timeline-title">{{ item.title[currentLang] }}</div>
+        <div v-if="item.desc[currentLang]" class="timeline-desc">{{ item.desc[currentLang] }}</div>
+      </div>
+    </div>
 
     <div class="links-section reveal-block">
       <div class="section-label">CONTACT ME</div>
