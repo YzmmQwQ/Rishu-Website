@@ -757,51 +757,6 @@ a {
     }
 }
 
-.h1-flips-wrap-large {
-    height: 28px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.h1-flips-large {
-    display: flex;
-    flex-direction: column;
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    animation: flipAnimationLarge 16s cubic-bezier(0.8, 0, 0.2, 1) infinite;
-}
-
-@keyframes flipAnimationLarge {
-    0% { transform: translateY(0); }
-    17.5% { transform: translateY(0); }
-    20% { transform: translateY(-100%); }
-    37.5% { transform: translateY(-100%); }
-    40% { transform: translateY(-200%); }
-    57.5% { transform: translateY(-200%); }
-    60% { transform: translateY(-300%); }
-    77.5% { transform: translateY(-300%); }
-    80% { transform: translateY(-400%); }
-    97.5% { transform: translateY(-400%); }
-    100% { transform: translateY(-400%); }
-}
-
-.h1-flip-large {
-    height: 28px;
-    font-size: 1.25rem;
-    line-height: 28px;
-    font-weight: 500;
-    color: var(--fg-secondary);
-}
-
-.subtitle-large {
-    font-size: 14px;
-    line-height: 20px;
-    font-weight: 400;
-    color: var(--fg-tertiary);
-    margin-bottom: 16px;
-}
-
 /* Subtitle scroll with inverted effect */
 .subtitle-scroll-wrap {
     --subtitle-height: 48px;
