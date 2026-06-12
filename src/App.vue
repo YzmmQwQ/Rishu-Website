@@ -14,7 +14,7 @@ const translations = {
     bio: '「大叔我想退休。」',
     quote: '散漫是生活的解药，除此以外都无所谓。',
     emailTitle: '来封 Email？',
-    qqTitle: '加我 QQ？',
+    xTitle: '关注我的 X？',
     travel: '异次元之旅'
   },
   en: {
@@ -22,7 +22,7 @@ const translations = {
     bio: 'An ordinary gamer.',
     quote: 'Vagrant is the antidote to life, nothing else matters.',
     emailTitle: 'Send me an Email?',
-    qqTitle: 'Add me on QQ?',
+    xTitle: 'Follow me on X?',
     travel: 'Interdimensional Journey'
   },
   ja: {
@@ -30,7 +30,7 @@ const translations = {
     bio: '高校生、眠い。',
     quote: '散漫は人生の解毒剤であり、それ以外はどうでもいい。',
     emailTitle: 'メールを送る？',
-    qqTitle: 'QQで連絡する？',
+    xTitle: 'X でフォローする？',
     travel: '異次元の旅'
   }
 };
@@ -1228,6 +1228,7 @@ onBeforeUnmount(() => {
         :key="item.date + item.title.zh"
         class="timeline-item"
         :class="{ 'is-latest': i === 0 }"
+        :style="{ '--item-index': i }"
       >
         <span class="timeline-node" aria-hidden="true"></span>
         <div class="timeline-date">{{ item.date }}</div>
@@ -1251,15 +1252,15 @@ onBeforeUnmount(() => {
             <div class="link-desc">rishu@rishu.cfd</div>
           </div>
         </a>
-        <a href="https://qm.qq.com/q/LF2qz5Omcy" class="link-card" target="_blank">
+        <a href="https://x.com/rishuqwq" class="link-card" target="_blank">
           <div class="link-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
           </div>
           <div class="link-info">
-            <div class="link-name">{{ text.qqTitle }}</div>
-            <div class="link-desc">3436984302</div>
+            <div class="link-name">{{ text.xTitle }}</div>
+            <div class="link-desc">@RishuQwQ</div>
           </div>
         </a>
       </div>
