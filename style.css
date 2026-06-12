@@ -1326,9 +1326,13 @@ a {
 /* Vertical (mobile): center the timeline */
 @media (max-width: 600px) {
     .timeline {
-        max-width: 400px;
+        max-width: 360px;
         margin-left: auto;
         margin-right: auto;
+    }
+
+    .timeline-item {
+        padding-left: 24px;
     }
 }
 
