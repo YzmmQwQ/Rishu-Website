@@ -760,7 +760,7 @@ function setupCursor() {
   cursorRAF = window.requestAnimationFrame(tickCursor);
 
   const hoverSelectors =
-    'a, button, .info-item, .tag, .link-card, .lang-btn, .theme-toggle, .np-play-btn, .nav-link';
+    'a, button, .tag, .link-card, .lang-btn, .theme-toggle, .np-play-btn, .nav-link';
   const onDocumentOver = (e) => {
     const target = e.target.closest?.(hoverSelectors);
 
@@ -1260,7 +1260,7 @@ onBeforeUnmount(() => {
           </div>
           <div class="link-info">
             <div class="link-name">{{ text.xTitle }}</div>
-            <div class="link-desc">@RishuQwQ</div>
+            <div class="link-desc">RishuQwQ</div>
           </div>
         </a>
       </div>
