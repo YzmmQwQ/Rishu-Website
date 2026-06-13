@@ -44,7 +44,7 @@ const subtitleItems = [
   'KERNEL PANIC :)',
   'TABS NOT SPACES'
 ];
-const titleLetters = "IT'S RISHU.".split('');
+const titleLetters = "Hi From Rishu!".split('');
 const infoItems = [
   {
     label: 'Birthday',
