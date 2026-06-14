@@ -1264,6 +1264,9 @@ onBeforeUnmount(() => {
           </div>
         </a>
       </div>
+      <a href="https://docs.rishu.cfd/before-adding/social-media" class="more-link" target="_blank">
+        MORE >>>
+      </a>
     </div>
 
     <div class="footer">

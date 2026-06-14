@@ -1396,6 +1396,33 @@ a {
     }
 }
 
+.links-section {
+    margin-bottom: 32px;
+}
+
+.links-section::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.more-link {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 4px 0;
+    font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--fg-tertiary);
+    text-decoration: none;
+    transition: color 0.2s cubic-bezier(0.8, 0, 0.2, 1);
+    float: right;
+}
+
+.more-link:hover {
+    color: var(--accent);
+}
+
 /* Footer */
 .footer {
     text-align: center;
