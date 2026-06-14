@@ -1409,7 +1409,7 @@ a {
 .more-link {
     display: inline-block;
     margin-top: 16px;
-    padding: 4px 0;
+    padding: 4px 6px;
     font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace;
     font-size: 12px;
     font-weight: 600;
